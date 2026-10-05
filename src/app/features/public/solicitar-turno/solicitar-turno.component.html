@@ -1,0 +1,168 @@
+<div class="min-h-screen bg-slate-50 pb-20">
+
+  <!-- ============================================ -->
+  <!-- 1. HERO HEADER (CABECERA DINÁMICA) -->
+  <!-- ============================================ -->
+  <section class="bg-slate-900 text-white pt-32 pb-32 px-4 relative overflow-hidden">
+    <!-- Orbes Decorativos (Fieles a tu estilo) -->
+    <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-indigo-600 rounded-full opacity-20 blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 right-0 w-[300px] h-[300px] bg-teal-500 rounded-full opacity-20 blur-[80px] translate-x-1/2 translate-y-1/2"></div>
+
+    <div class="max-w-4xl mx-auto relative z-10 text-center animate-fade-in">
+      <span class="text-indigo-400 font-bold uppercase tracking-widest text-xs mb-2 block">Portal de Turnos</span>
+      <h1 class="text-3xl md:text-5xl font-black mb-4 tracking-tight">
+        {{ idTurnoOriginal() ? 'Reprogramar Cita' : 'Reserva tu Turno' }}
+      </h1>
+
+      @if (idTurnoOriginal()) {
+        <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-indigo-200 text-sm font-bold animate-slide-up">
+          <fa-icon [icon]="icons.reprogramar"></fa-icon>
+          <span>Crédito a favor: ${{ creditoReprogramacion() }}</span>
+        </div>
+      } @else {
+        <p class="text-slate-400 max-w-lg mx-auto text-sm md:text-base">
+          Sigue los pasos para agendar tu atención médica en pocos minutos.
+        </p>
+      }
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 2. WIZARD CARD (ORQUESTADOR DE COMPONENTES) -->
+  <!-- ============================================ -->
+  <section class="px-4 -mt-24 relative z-20">
+    <div class="max-w-5xl mx-auto bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/60 overflow-hidden min-h-[600px] flex flex-col animate-slide-up">
+
+      <!-- BARRA DE PROGRESO (Dinámica 25% por paso) -->
+      <div class="h-2 bg-slate-100 w-full shrink-0">
+        <div class="h-full bg-gradient-to-r from-indigo-500 to-teal-500 transition-all duration-700 ease-in-out"
+             [style.width.%]="pasoActual() * 25"></div>
+      </div>
+
+      <!-- HEADER DEL WIZARD (NAVEGACIÓN Y STEPS) -->
+      <div class="px-8 pt-8 pb-4 flex justify-between items-center shrink-0">
+        <!-- Botón Volver con efecto hover -->
+        <button (click)="volver()" class="group flex items-center gap-2 text-slate-400 hover:text-indigo-600 transition-colors font-bold text-xs uppercase tracking-widest">
+          <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-indigo-100 transition-all">
+            <fa-icon [icon]="icons.faArrowLeft"></fa-icon>
+          </div>
+          <span>Volver</span>
+        </button>
+
+        <!-- Indicador de pasos visual -->
+        <div class="flex items-center gap-3">
+          @for (step of [1, 2, 3, 4]; track step) {
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black transition-all duration-300"
+                   [ngClass]="pasoActual() >= step ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-200 text-slate-400'">
+                {{ step }}
+              </div>
+              @if (step < 4) { <div class="w-4 h-0.5 rounded-full bg-slate-100"></div> }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- 🧩 ÁREA DE RENDERIZADO DINÁMICO (Hijos) -->
+      <!-- ====================================================== -->
+      <div class="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar">
+
+        @switch (pasoActual()) {
+
+          <!-- PASO 1: MÉDICOS -->
+          @case (1) {
+            <div class="animate-fade-in">
+              <app-paso-medico
+                (onSelect)="handleMedicoSelected($event)">
+              </app-paso-medico>
+            </div>
+          }
+
+          <!-- PASO 2: PRESTACIONES -->
+          @case (2) {
+            <div class="animate-fade-in">
+              <app-paso-prestacion
+                [medico]="medicoSeleccionado()"
+                (onSelect)="handlePrestacionSelected($event)">
+              </app-paso-prestacion>
+            </div>
+          }
+
+          <!-- PASO 3: CALENDARIO -->
+          @case (3) {
+            <div class="animate-fade-in">
+              <app-paso-calendario
+                [medico]="medicoSeleccionado()"
+                [prestacion]="prestacionSeleccionada()"
+                (onSelect)="handleSlotSelected($event)">
+              </app-paso-calendario>
+            </div>
+          }
+
+          <!-- PASO 4: PAGO Y CONFIRMACIÓN -->
+         <!-- PASO 4: PAGO Y CONFIRMACIÓN -->
+          @case (4) {
+            <div class="animate-fade-in">
+
+              <!-- 🛑 MURO DE SEGURIDAD: Solo usuarios logueados ven el pago -->
+              @if (usuarioLogueado()) {
+
+                  <app-paso-pago
+                    [medico]="medicoSeleccionado()"
+                    [prestacion]="prestacionSeleccionada()"
+                    [fecha]="fechaSeleccionada()"
+                    [hora]="horaSeleccionada()"
+                    [paciente]="pacienteActual()"
+                    [form]="confirmForm"
+                    [creditoRepro]="creditoReprogramacion()"
+                    [loading]="guardandoTurno()"
+                    [pagaEstudio]="pagaEstudio()"
+                    [urlEstudioExterno]="urlEstudioExterno()"
+                    [precioLaboratorio]="precioEstudioBase()"
+                    (onConfirm)="confirmarTurno()">
+                  </app-paso-pago>
+
+              } @else {
+
+                  <!-- 🔒 VISTA PARA VISITANTES: "Debes iniciar sesión" -->
+                  <div class="bg-white/60 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/60 shadow-xl text-center max-w-md mx-auto mt-10">
+                    <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                      🔒
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-800 mb-2">Casi terminamos...</h3>
+                    <p class="text-slate-500 font-medium mb-8">
+                      Para confirmar tu turno con el <strong>Dr. {{ medicoSeleccionado().displayName }}</strong>, necesitas identificarte.
+                    </p>
+
+                    <div class="flex flex-col gap-3">
+                      <button (click)="irALogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-indigo-500/30 transition-all active:scale-95">
+                        Iniciar Sesión
+                      </button>
+                      <button (click)="irARegistro()" class="w-full bg-white border-2 border-indigo-100 text-indigo-600 hover:bg-indigo-50 py-3 rounded-xl font-bold uppercase tracking-widest transition-all">
+                        Crear Cuenta
+                      </button>
+                    </div>
+                  </div>
+
+              }
+            </div>
+          }
+        }
+
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- ====================================================== -->
+<!-- 💰 MODAL DE PAGO (Transversal) -->
+<!-- ====================================================== -->
+@if (mostrarModalPago()) {
+  <app-simulacion-pago
+    [monto]="montosCalculados().pagaPaciente"
+    (pagoExitoso)="onPagoAprobado()"
+    (cancelar)="mostrarModalPago.set(false)">
+  </app-simulacion-pago>
+}

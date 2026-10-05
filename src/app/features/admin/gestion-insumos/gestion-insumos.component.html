@@ -1,0 +1,327 @@
+<div class="w-full h-full p-4 flex flex-col">
+  <div class="content-card animate-fade-in flex flex-col h-full">
+
+    <!-- TOOLBAR -->
+    <div class="filters-area flex-col md:flex-row gap-4 mb-4">
+
+      <!-- TÍTULO -->
+      <div class="w-full md:w-auto shrink-0">
+        <h2 class="text-2xl font-bold text-slate-800 drop-shadow-sm">Gestión de Insumos</h2>
+        <p class="text-slate-600 font-medium text-sm">Farmacia y Suministros</p>
+      </div>
+
+      <!-- ACCIONES -->
+      <div class="flex flex-col md:flex-row gap-3 items-center w-full md:w-auto flex-1 justify-end">
+
+        <!-- FILTRO CATEGORÍA -->
+        <div class="relative w-full md:w-auto">
+          <select (change)="onFilterCategory($event)"
+                  class="appearance-none bg-white/30 hover:bg-white/50 border-none text-slate-700 font-bold text-xs rounded-2xl py-3 pl-4 pr-8 cursor-pointer transition-all w-full md:w-auto focus:ring-2 focus:ring-teal-400/30">
+            <option value="TODAS">Todas las Cat.</option>
+            <option value="Material Médico">Material Médico</option>
+            <option value="Medicamentos">Medicamentos</option>
+            <option value="Limpieza">Limpieza</option>
+            <option value="Oficina">Oficina</option>
+            <option value="Ropa">Ropa Hospitalaria</option>
+            <option value="Otro">Otro</option>
+          </select>
+          <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-[10px]">▼</div>
+        </div>
+
+        <!-- FILTRO STOCK -->
+        <div class="relative w-full md:w-auto">
+          <select (change)="onFilterStock($event)"
+                  class="appearance-none bg-white/30 hover:bg-white/50 border-none text-slate-700 font-bold text-xs rounded-2xl py-3 pl-4 pr-8 cursor-pointer transition-all w-full md:w-auto focus:ring-2 focus:ring-teal-400/30">
+            <option value="TODOS">Estado: Todos</option>
+            <option value="BAJO">⚠ Stock Bajo</option>
+            <option value="NORMAL">✅ Stock Normal</option>
+          </select>
+          <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-[10px]">▼</div>
+        </div>
+
+        <!-- BUSCADOR -->
+        <div class="relative w-full md:flex-1">
+          <fa-icon [icon]="icons.faSearch" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 z-10"></fa-icon>
+          <input type="text" placeholder="Buscar insumo..." class="search-glass w-full" (input)="onSearch($event)">
+        </div>
+
+        <!-- BOTÓN AGREGAR -->
+        <button (click)="openEditModal()" class="bg-teal-500 hover:bg-teal-600 text-white w-10 h-10 rounded-full shadow-lg shadow-teal-500/30 flex items-center justify-center transition-all shrink-0 active:scale-95">
+          <fa-icon [icon]="icons.faPlus"></fa-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-section overflow-hidden relative custom-scrollbar flex-1 rounded-3xl bg-white/30 border border-white/40 shadow-inner">
+      <div class="absolute inset-0 overflow-auto p-4">
+
+        <!-- DESKTOP TABLE -->
+        <div class="hidden md:block">
+          <table class="glass-table w-full table-fixed">
+            <thead class="sticky top-0 z-10 backdrop-blur-md bg-white/40">
+              <tr>
+                <th class="pl-6 text-left py-4 w-auto rounded-l-xl">Insumo</th>
+                <th class="text-left py-4 w-[15%]">Categoría</th>
+                <th class="text-center py-4 w-[12%]">Stock</th>
+                <th class="text-center py-4 w-[15%]">Vencimiento</th>
+                <th class="text-right pr-6 py-4 w-[120px] rounded-r-xl">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (i of filteredInsumos(); track i.id) {
+                <tr class="transition-all duration-200 border-b border-teal-500/10 hover:bg-white/60 group"
+                    [class.opacity-60]="i.estado === 'Inactivo'">
+
+                  <td class="pl-6 py-3 align-middle truncate rounded-l-xl group-hover:rounded-l-xl">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-slate-200 shadow-sm overflow-hidden shrink-0">
+                        @if (i.foto) {
+                          <img [src]="i.foto" class="w-full h-full object-cover">
+                        } @else {
+                          <fa-icon [icon]="icons.faBoxOpen" class="text-slate-400 text-lg"></fa-icon>
+                        }
+                      </div>
+                      <div class="truncate">
+                        <div class="font-bold text-slate-800 truncate text-sm">{{ i.nombre }}</div>
+                        <div class="text-[10px] text-slate-500 font-mono tracking-wide">{{ i.codigo || 'S/C' }}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="py-3 align-middle text-left truncate">
+                    <span class="status-badge category text-[10px] bg-white/60 border-indigo-100">
+                      {{ i.categoria }}
+                    </span>
+                  </td>
+
+                  <td class="py-3 align-middle text-center">
+                    <div class="flex flex-col items-center">
+                      <span class="font-bold text-base" [ngClass]="i.stockActual <= i.stockMinimo ? 'text-red-600' : 'text-teal-700'">
+                        {{ i.stockActual }}
+                      </span>
+                      <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider opacity-70">{{ i.unidad }}</span>
+                      @if (i.stockActual <= i.stockMinimo) {
+                        <span class="text-[9px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full mt-1 animate-pulse border border-red-100">
+                          ⚠ Reponer
+                        </span>
+                      }
+                    </div>
+                  </td>
+
+                  <td class="py-3 align-middle text-center">
+                    @if (i.fechaVencimiento) {
+                      @switch (getEstadoVencimiento(i.fechaVencimiento)) {
+                        @case ('VENCIDO') { <span class="status-badge danger text-[10px]">VENCIDO</span> }
+                        @case ('POR_VENCER') { <span class="status-badge warning text-[10px]">Por Vencer</span> }
+                        @default { <span class="text-xs text-slate-600 font-mono font-medium">{{ i.fechaVencimiento | date:'dd/MM/yy' }}</span> }
+                      }
+                    } @else {
+                      <span class="text-slate-400 text-[10px]">-</span>
+                    }
+                  </td>
+
+                  <td class="text-right pr-6 py-3 align-middle rounded-r-xl group-hover:rounded-r-xl">
+                    <div class="flex justify-end gap-2">
+                      <button (click)="openMovementModal(i)" class="icon-btn stock w-8 h-8" title="Control Stock">
+                        <fa-icon [icon]="icons.faExchangeAlt" class="text-xs"></fa-icon>
+                      </button>
+                      <button (click)="openEditModal(i)" class="icon-btn edit w-8 h-8" title="Editar Datos">
+                        <fa-icon [icon]="icons.faEdit" class="text-xs"></fa-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- MOBILE -->
+        <div class="md:hidden flex flex-col gap-3">
+          @for (i of filteredInsumos(); track i.id) {
+            <div class="bg-white/40 p-4 rounded-2xl border border-white/50 shadow-sm flex justify-between items-center backdrop-blur-sm">
+              <div class="flex items-center gap-3 overflow-hidden">
+                <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+                   @if (i.foto) { <img [src]="i.foto" class="w-full h-full object-cover"> }
+                   @else { <fa-icon [icon]="icons.faBoxOpen" class="text-slate-400 text-lg"></fa-icon> }
+                </div>
+                <div class="truncate">
+                  <h3 class="font-bold text-slate-800 text-sm truncate">{{ i.nombre }}</h3>
+                  @if (i.stockActual <= i.stockMinimo) {
+                    <span class="text-red-500 text-[10px] font-bold flex items-center gap-1">⚠ Stock Bajo: {{ i.stockActual }}</span>
+                  } @else {
+                    <span class="text-teal-600 text-[10px] font-bold">Stock: {{ i.stockActual }}</span>
+                  }
+                </div>
+              </div>
+              <button (click)="openMovementModal(i)" class="icon-btn stock ml-2"><fa-icon [icon]="icons.faExchangeAlt"></fa-icon></button>
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 1: EDICIÓN DE DATOS -->
+<!-- ======================================================== -->
+@if (isEditModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+    <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border border-white/20">
+
+      <div class="bg-slate-50/80 px-6 py-4 border-b flex justify-between items-center backdrop-blur-sm">
+        <h3 class="font-bold text-lg text-slate-800">{{ selectedInsumo ? 'Editar' : 'Nuevo' }} Insumo</h3>
+        <button (click)="closeEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors">
+            <fa-icon [icon]="icons.faTimes" class="text-lg"></fa-icon>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto custom-scrollbar">
+        <form [formGroup]="insumoForm" (ngSubmit)="saveInsumo()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div class="md:col-span-2 flex justify-center mb-4">
+            <div class="relative group cursor-pointer w-32 h-32 rounded-2xl overflow-hidden border-2 border-dashed border-slate-300 hover:border-teal-500 hover:bg-teal-50 transition-all bg-slate-50 shadow-inner">
+              @if (imagePreview()) {
+                <img [src]="imagePreview()" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white">
+                  <fa-icon [icon]="icons.faCamera" class="text-xl mb-1"></fa-icon>
+                  <span class="text-[10px] font-bold uppercase">Cambiar</span>
+                </div>
+              } @else {
+                <div class="w-full h-full flex flex-col items-center justify-center text-slate-400 group-hover:text-teal-600 transition-colors">
+                  <fa-icon [icon]="icons.faCamera" class="text-3xl mb-2"></fa-icon>
+                  <span class="text-[10px] font-bold uppercase">Subir Foto</span>
+                </div>
+              }
+              <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" (change)="onFileSelected($event)" accept="image/*">
+            </div>
+          </div>
+
+          <div class="md:col-span-2"><label class="label-text">Nombre Producto <span class="text-red-400">*</span></label><input type="text" formControlName="nombre" class="input-field"></div>
+          <div><label class="label-text">Código</label><input type="text" formControlName="codigo" placeholder="Ej: INS-001" class="input-field"></div>
+          <div><label class="label-text">Categoría <span class="text-red-400">*</span></label><select formControlName="categoria" class="input-field cursor-pointer"><option value="Material Médico">Material Médico</option><option value="Medicamentos">Medicamentos</option><option value="Limpieza">Limpieza</option><option value="Oficina">Oficina</option><option value="Ropa">Ropa Hospitalaria</option><option value="Otro">Otro</option></select></div>
+          <div><label class="label-text">Unidad Medida</label><select formControlName="unidad" class="input-field cursor-pointer"><option value="Unidad">Unidad</option><option value="Caja">Caja</option><option value="Litro">Litro</option><option value="Pack">Pack</option><option value="Ampolla">Ampolla</option><option value="Blister">Blister</option></select></div>
+          <div><label class="label-text">Ubicación</label><input type="text" formControlName="ubicacion" placeholder="Ej: Estantería A" class="input-field"></div>
+          <div><label class="label-text">Stock Inicial <span class="text-red-400">*</span></label><input type="number" formControlName="stockActual" class="input-field font-bold text-center"></div>
+          <div><label class="label-text">Alerta Mínimo</label><input type="number" formControlName="stockMinimo" class="input-field text-center"></div>
+          <div><label class="label-text">Precio Unitario</label><input type="number" formControlName="precioUnitario" class="input-field"></div>
+          <div><label class="label-text">Vencimiento</label><input type="date" formControlName="fechaVencimiento" class="input-field cursor-pointer"></div>
+
+          <div class="md:col-span-2 flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+            <button type="button" (click)="closeEditModal()" class="px-5 py-2 text-slate-500 font-bold text-sm hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors">Cancelar</button>
+            <button type="submit" [disabled]="insumoForm.invalid" class="btn-primary py-2 px-6 rounded-full text-sm shadow-teal-500/20">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ======================================================== -->
+<!-- MODAL 2: MOVIMIENTOS (CON REGISTRO FINANCIERO) -->
+<!-- ======================================================== -->
+@if (isMovementModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+    <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden border border-white/20">
+      <div class="bg-slate-50/80 px-6 py-4 border-b flex justify-between items-center backdrop-blur-sm">
+        <div>
+          <h3 class="font-bold text-lg text-slate-800">Control de Stock</h3>
+          <p class="text-xs text-slate-500">Insumo: <span class="font-bold text-teal-600">{{ selectedInsumo?.nombre }}</span></p>
+        </div>
+        <button (click)="closeMovementModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors">
+            <fa-icon [icon]="icons.faTimes" class="text-lg"></fa-icon>
+        </button>
+      </div>
+
+      <div class="flex flex-col md:flex-row h-full overflow-hidden">
+        <div class="w-full md:w-1/3 bg-slate-50 p-6 border-r border-slate-200 overflow-y-auto">
+          <form [formGroup]="movimientoForm" (ngSubmit)="registrarMovimiento()" class="flex flex-col gap-4">
+
+             <!-- Tipo y Cantidad -->
+             <div>
+               <label class="label-text">Tipo Movimiento</label>
+               <select formControlName="tipo" class="input-field font-bold cursor-pointer">
+                 <option value="ENTRADA">📥 Entrada (Compra/Reposición)</option>
+                 <option value="SALIDA">📤 Salida (Consumo)</option>
+                 <option value="AJUSTE">🔧 Ajuste Inventario</option>
+                 <option value="VENCIDO">📅 Descarte por Vencimiento</option>
+               </select>
+             </div>
+
+             <div>
+               <label class="label-text">Cantidad</label>
+               <div class="flex items-center gap-2">
+                 <input type="number" formControlName="cantidad" min="1" class="input-field font-bold text-center flex-1">
+                 <span class="bg-white border border-slate-200 px-2 py-2 rounded-lg text-xs font-bold text-slate-500 min-w-[50px] text-center shadow-sm">
+                   {{ selectedInsumo?.unidad }}
+                 </span>
+               </div>
+             </div>
+
+             <!-- ✅ SECCIÓN DE COSTOS (Solo visible en ENTRADA) -->
+             @if (movimientoForm.get('tipo')?.value === 'ENTRADA') {
+               <div class="bg-teal-50 p-4 rounded-xl border border-teal-100 animate-fade-in shadow-inner">
+                 <label class="label-text text-teal-700 mb-2 block font-black uppercase text-[10px]">Registro Financiero</label>
+
+                 <div class="flex items-center gap-3 mb-3">
+                   <span class="text-teal-600 font-bold text-lg">$</span>
+                   <input type="number" formControlName="costoTotal" placeholder="Costo Total"
+                          class="input-field !bg-white font-bold text-slate-700 border-teal-200 focus:border-teal-500">
+                 </div>
+
+                 <label class="flex items-center gap-2 cursor-pointer select-none">
+                   <input type="checkbox" formControlName="registrarEnCaja" class="accent-teal-600 w-4 h-4 rounded cursor-pointer">
+                   <span class="text-xs text-teal-800 font-bold">Registrar Egreso en Caja</span>
+                 </label>
+               </div>
+             }
+
+             <!-- Motivo -->
+             <div>
+               <label class="label-text">Motivo / Observación</label>
+               <textarea formControlName="motivo" rows="2" class="input-field resize-none placeholder-slate-400" placeholder="Ej: Compra mensual, rotura..."></textarea>
+             </div>
+
+             <button type="submit" [disabled]="movimientoForm.invalid" class="btn-primary w-full mt-2 shadow-teal-500/20">Registrar</button>
+          </form>
+        </div>
+
+        <div class="flex-1 p-6 overflow-y-auto custom-scrollbar bg-white">
+          <h4 class="text-xs font-bold text-slate-400 uppercase mb-4 flex items-center gap-2">Historial Reciente</h4>
+          <div class="space-y-3">
+            @for (mov of historialMovimientos(); track mov.id) {
+              <div class="flex items-start gap-3 p-3 rounded-xl border border-slate-100 text-sm hover:bg-slate-50 transition-colors">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white shrink-0 font-bold text-xs shadow-sm"
+                     [ngClass]="{
+                       'bg-green-500': mov.tipo === 'ENTRADA',
+                       'bg-blue-500': mov.tipo === 'SALIDA',
+                       'bg-orange-500': mov.tipo === 'AJUSTE',
+                       'bg-red-500': mov.tipo === 'VENCIDO'
+                     }">
+                   {{ mov.tipo === 'ENTRADA' ? '+' : '-' }}
+                </div>
+                <div class="flex-1">
+                   <div class="flex justify-between">
+                     <span class="font-bold text-slate-700">{{ mov.tipo }} ({{ mov.cantidad }})</span>
+                     <span class="text-[10px] text-slate-400 font-mono">{{ mov.fecha.toDate() | date:'dd/MM HH:mm' }}</span>
+                   </div>
+                   <p class="text-slate-500 text-xs mt-0.5">{{ mov.motivo }}</p>
+                </div>
+                <div class="text-right pl-2 border-l border-slate-100">
+                   <span class="block text-[9px] text-slate-400 uppercase font-bold">Stock</span>
+                   <span class="font-bold text-slate-700">{{ mov.stockResultante }}</span>
+                </div>
+              </div>
+            }
+            @if (historialMovimientos().length === 0) {
+               <div class="text-center text-slate-400 text-xs py-10 italic">Sin movimientos registrados</div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

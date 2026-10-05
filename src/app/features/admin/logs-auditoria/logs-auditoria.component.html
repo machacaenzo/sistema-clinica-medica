@@ -1,0 +1,93 @@
+<div class="w-full h-full p-6 flex flex-col gap-6 animate-fade-in">
+
+  <!-- HEADER -->
+  <div class="flex flex-col md:flex-row justify-between items-end gap-4 shrink-0">
+    <div>
+      <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
+        <fa-icon [icon]="icons.shield" class="text-rose-600"></fa-icon> Auditoría de Seguridad
+      </h2>
+      <p class="text-slate-500 font-medium text-sm">Registro inalterable de acceso a Historias Clínicas (Break-the-Glass)</p>
+    </div>
+
+    <!-- BUSCADOR -->
+    <div class="relative w-full md:w-80 group">
+      <fa-icon [icon]="icons.search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-rose-500 transition-colors"></fa-icon>
+      <input type="text" [ngModel]="filtro()" (ngModelChange)="filtro.set($event)"
+             placeholder="Buscar admin, paciente o motivo..."
+             class="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 text-sm focus:ring-4 focus:ring-rose-100 outline-none transition-all shadow-sm">
+    </div>
+  </div>
+
+  <!-- TABLA DE LOGS -->
+  <div class="table-section flex-1 flex flex-col overflow-hidden bg-white/50 backdrop-blur-md rounded-[2.5rem] border border-white shadow-2xl">
+    <div class="overflow-x-auto overflow-y-auto custom-scrollbar flex-1">
+      <table class="glass-table w-full">
+        <thead class="sticky top-0 z-10 bg-slate-800 text-white">
+          <tr>
+            <th class="px-6 py-4 text-left">Fecha y Hora</th>
+            <th class="px-6 py-4 text-left">Administrador</th>
+            <th class="px-6 py-4 text-left">Paciente Afectado</th>
+            <th class="px-6 py-4 text-left">Motivo / Justificación</th>
+            <th class="px-6 py-4 text-center">Referencia</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (log of logsFiltrados(); track log.id) {
+            <tr class="hover:bg-rose-50/30 transition-colors group">
+              <!-- Fecha -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <p class="text-sm font-black text-slate-700">{{ log.fecha.toDate() | date:'dd/MM/yyyy' }}</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{{ log.fecha.toDate() | date:'HH:mm:ss' }} hs</p>
+              </td>
+              <!-- Admin -->
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-slate-800 group-hover:text-white transition-all">
+                    <fa-icon [icon]="icons.user" class="text-xs"></fa-icon>
+                  </div>
+                  <span class="text-xs font-bold text-slate-600">{{ log.emailAdmin }}</span>
+                </div>
+              </td>
+              <!-- Paciente -->
+              <td class="px-6 py-4">
+                <span class="text-xs font-black text-slate-800">{{ log.nombrePaciente }}</span>
+              </td>
+              <!-- Motivo -->
+              <td class="px-6 py-4">
+                <div class="flex flex-col">
+                  <span class="text-[10px] font-black uppercase"
+                        [ngClass]="log.motivo === 'Orden Judicial' ? 'text-indigo-600' : 'text-rose-600'">
+                    {{ log.motivo }}
+                  </span>
+                  <p class="text-[11px] text-slate-500 italic line-clamp-1">"Acceso auditado por protocolo crítico"</p>
+                </div>
+              </td>
+              <!-- Referencia -->
+              <td class="px-6 py-4 text-center">
+                <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-[10px] font-mono font-bold border border-slate-200">
+                  {{ log.referencia }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="py-20 text-center">
+                 <fa-icon [icon]="icons.alert" class="text-slate-200 text-5xl mb-4"></fa-icon>
+                 <p class="text-slate-400 font-bold uppercase tracking-widest">No se registran accesos críticos</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Badge de Seguridad Final -->
+  <div class="flex justify-center shrink-0">
+    <div class="bg-slate-900 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 shadow-xl">
+      <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+      Sistema de Monitoreo de Privacidad Activo
+    </div>
+  </div>
+
+</div>

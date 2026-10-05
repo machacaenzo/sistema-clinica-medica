@@ -1,0 +1,195 @@
+<div class="animate-fade-in h-full flex flex-col gap-6">
+
+  <!-- 1. RESUMEN DE CITA (Header) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
+    <div class="bg-white/40 p-4 rounded-3xl border border-white/60 flex items-center gap-4">
+      <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg"><fa-icon [icon]="icons.ok"></fa-icon></div>
+      <div class="min-w-0">
+        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Médico y Prestación</p>
+        <h4 class="font-bold text-slate-800 text-xs truncate">Dr. {{ medico?.displayName }}</h4>
+        <p class="text-[10px] text-indigo-500 font-bold uppercase truncate">{{ prestacion?.nombre }}</p>
+      </div>
+    </div>
+    <div class="bg-white/40 p-4 rounded-3xl border border-white/60 flex items-center gap-4">
+      <div class="w-10 h-10 rounded-xl bg-teal-500 text-white flex items-center justify-center shadow-lg"><fa-icon [icon]="icons.ok"></fa-icon></div>
+      <div class="min-w-0">
+        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Fecha y Horario</p>
+        <h4 class="font-bold text-slate-800 text-xs truncate">{{ fecha | date:'EEEE dd MMMM':'':'es' }}</h4>
+        <p class="text-[10px] text-teal-600 font-black uppercase">{{ hora }} hs</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-0">
+
+    <!-- 💰 COLUMNA A: LIQUIDACIÓN DETALLADA (Nivel Dios) -->
+    <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden flex flex-col">
+      <div class="absolute -top-20 -right-20 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl"></div>
+
+      <h4 class="text-[10px] font-black text-teal-400 uppercase tracking-[0.3em] mb-6 flex items-center gap-2 relative z-10">
+        <fa-icon [icon]="icons.shield"></fa-icon> Resumen de Cuenta
+      </h4>
+
+      <div class="space-y-4 flex-1 relative z-10 custom-scrollbar overflow-y-auto pr-2">
+
+        <!-- Bloque Consulta -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-400">Honorarios Médicos</span>
+            <span class="font-bold">${{ medico?.valorConsulta }}</span>
+          </div>
+          @if (resumenFinanciero().montoCubreOS > 0 && resumenFinanciero().coberturaConsulta > 0) {
+            <div class="flex justify-between text-[11px] text-emerald-400 font-bold">
+              <span>Cobertura {{ form.get('obraSocial')?.value }} ({{ resumenFinanciero().coberturaConsulta }}%)</span>
+              <span>- ${{ (medico?.valorConsulta * resumenFinanciero().coberturaConsulta) / 100 }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Bloque Estudio -->
+        <!-- Bloque Estudio -->
+        @if (pagaEstudio || resumenFinanciero().tieneEstudioExterno) {
+          <div class="pt-3 border-t border-white/10 space-y-1">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">Estudio Prev. (Lab/ECG)</span>
+
+              <!-- ✅ CORRECCIÓN 1: Usamos el precio real -->
+              <span class="font-bold">${{ resumenFinanciero().precioEstudio }}</span>
+            </div>
+
+            @if (pagaEstudio && resumenFinanciero().coberturaEstudio > 0) {
+              <div class="flex justify-between text-[11px] text-emerald-400 font-bold">
+                <span>Cobertura {{ form.get('obraSocial')?.value }} ({{ resumenFinanciero().coberturaEstudio }}%)</span>
+
+                <!-- ✅ CORRECCIÓN 2: Calculamos el descuento con el precio real -->
+                <span>- ${{ (resumenFinanciero().precioEstudio * resumenFinanciero().coberturaEstudio) / 100 }}</span>
+              </div>
+            }
+
+            @if (!pagaEstudio && resumenFinanciero().tieneEstudioExterno) {
+              <p class="text-[9px] text-teal-400 font-black uppercase tracking-tighter italic">✓ Estudio externo bonificado</p>
+            }
+          </div>
+        }
+
+        <!-- Créditos y Billetera -->
+        @if (resumenFinanciero().usoCreditoViejo > 0 || resumenFinanciero().usoSaldoBilletera > 0) {
+          <div class="pt-3 border-t border-white/10 space-y-1">
+            @if (resumenFinanciero().usoCreditoViejo > 0) {
+              <div class="flex justify-between text-[11px] text-indigo-400 font-bold">
+                <span>Crédito Turno Anterior</span>
+                <span>- ${{ resumenFinanciero().usoCreditoViejo }}</span>
+              </div>
+            }
+            @if (resumenFinanciero().usoSaldoBilletera > 0) {
+              <div class="flex justify-between text-[11px] text-teal-300 font-bold">
+                <span>Saldo Billetera Virtual</span>
+                <span>- ${{ resumenFinanciero().usoSaldoBilletera }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- TOTAL FINAL -->
+      <div class="mt-6 pt-6 border-t-2 border-dashed border-white/10 flex justify-between items-end shrink-0 relative z-10">
+        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">A pagar ahora</span>
+        <span class="text-4xl font-black tracking-tighter text-white">${{ resumenFinanciero().totalAFacturar }}</span>
+      </div>
+    </div>
+
+    <!-- 📋 COLUMNA B: DATOS Y PAGO -->
+    <div class="flex flex-col gap-6">
+
+      <!-- 👤 SOPORTE USUARIO SIN ROL (DNI y OS) -->
+      @if (!paciente?.dni) {
+        <div class="bg-amber-50 border border-amber-200 p-5 rounded-[2rem] animate-fade-in" [formGroup]="form">
+          <div class="flex items-center gap-2 mb-4">
+            <fa-icon [icon]="icons.alert" class="text-amber-500"></fa-icon>
+            <p class="text-[10px] font-black text-amber-800 uppercase tracking-widest">Información de Alta</p>
+          </div>
+          <div class="space-y-3">
+            <input type="text" formControlName="dni" placeholder="Tu DNI (Obligatorio)"
+                   class="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-amber-400">
+            <select formControlName="obraSocial" class="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 text-sm font-bold outline-none">
+               <option value="" disabled>Selecciona tu Obra Social</option>
+               <option value="Particular">Particular / Sin Cobertura</option>
+               @for (os of obrasSociales(); track os.id) {
+                 <option [value]="os.nombre">{{ os.nombre }}</option>
+               }
+            </select>
+          </div>
+        </div>
+      }
+
+      <!-- 🛡️ BLACKLIST CHECK -->
+      @if (!puedeUsarEfectivo()) {
+        <div class="bg-red-50 border-l-4 border-red-500 p-5 rounded-r-3xl animate-pulse">
+           <p class="text-[11px] text-red-700 font-bold leading-tight uppercase">
+             <fa-icon [icon]="icons.alert" class="mr-1"></fa-icon>
+             Pago en efectivo deshabilitado por inasistencias.
+           </p>
+        </div>
+      }
+
+      <!-- MÉTODOS DE PAGO -->
+      @if (resumenFinanciero().totalAFacturar > 0) {
+        <form [formGroup]="form" class="space-y-3">
+          <div class="grid grid-cols-1 gap-2.5">
+
+            <!-- EFECTIVO -->
+            <label class="cursor-pointer group" [class.opacity-40]="!puedeUsarEfectivo()">
+              <input type="radio" formControlName="metodoPago" value="Efectivo" [disabled]="!puedeUsarEfectivo()" class="sr-only peer">
+              <div class="p-4 bg-white border-2 border-slate-100 rounded-3xl transition-all peer-checked:border-indigo-600 peer-checked:bg-indigo-50/50 flex items-center gap-4">
+                <div class="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white"><fa-icon [icon]="icons.cash"></fa-icon></div>
+                <div>
+                  <h5 class="font-bold text-slate-800 text-xs">Efectivo en Recepción</h5>
+                  <p class="text-[9px] text-slate-400 font-medium mt-0.5">⚠️ Debes presentarte 20 min antes para pagar.</p>
+                </div>
+              </div>
+            </label>
+
+            <!-- TARJETA -->
+            <label class="cursor-pointer group">
+              <input type="radio" formControlName="metodoPago" value="Tarjeta de Crédito" class="sr-only peer">
+              <div class="p-4 bg-white border-2 border-slate-100 rounded-3xl transition-all peer-checked:border-indigo-600 peer-checked:bg-indigo-50/50 flex items-center gap-4">
+                <div class="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white"><fa-icon [icon]="icons.card"></fa-icon></div>
+                <div>
+                  <h5 class="font-bold text-slate-800 text-xs">Tarjeta (Débito/Crédito)</h5>
+                  <p class="text-[9px] text-indigo-500 font-black mt-0.5 uppercase">⚡ Confirmación Inmediata</p>
+                </div>
+              </div>
+            </label>
+
+            <!-- TRANSFERENCIA -->
+            <label class="cursor-pointer group">
+              <input type="radio" formControlName="metodoPago" value="Transferencia" class="sr-only peer">
+              <div class="p-4 bg-white border-2 border-slate-100 rounded-3xl transition-all peer-checked:border-indigo-600 peer-checked:bg-indigo-50/50 flex items-center gap-4">
+                <div class="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white"><fa-icon [icon]="icons.bank"></fa-icon></div>
+                <div>
+                  <h5 class="font-bold text-slate-800 text-xs">Transferencia Bancaria</h5>
+                  <p class="text-[9px] text-slate-400 font-medium mt-0.5">⏳ Tienes 2 horas para subir el comprobante.</p>
+                </div>
+              </div>
+            </label>
+
+          </div>
+        </form>
+      } @else {
+        <!-- CASO: TODO CUBIERTO -->
+        <div class="bg-emerald-50 border-2 border-emerald-200 p-8 rounded-[3rem] text-center animate-bounce-in">
+           <fa-icon [icon]="icons.ok" class="text-4xl text-emerald-500 mb-3"></fa-icon>
+           <h3 class="text-lg font-black text-emerald-900">¡Turno Bonificado!</h3>
+           <p class="text-xs text-emerald-700 font-bold uppercase">Costo 100% cubierto</p>
+        </div>
+      }
+
+      <button (click)="confirmar()"
+              [disabled]="loading || (resumenFinanciero().totalAFacturar > 0 && !form.get('metodoPago')?.value) || ( !paciente?.dni && form.get('dni')?.invalid )"
+              class="mt-auto bg-slate-900 hover:bg-black text-white py-5 rounded-[2.5rem] font-black uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 disabled:opacity-30">
+        {{ loading ? 'Finalizando...' : 'Confirmar y Agendar' }}
+      </button>
+
+    </div>
+  </div>
+</div>

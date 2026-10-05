@@ -1,0 +1,17 @@
+@keyframes scan {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
+
+.animate-scan-line {
+  position: absolute;
+  animation: scan 3s infinite linear;
+}
+
+// Estilos para que el visor de la cámara no sea gigante
+zxing-scanner {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

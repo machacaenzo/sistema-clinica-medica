@@ -1,0 +1,29 @@
+<main class="auth-page-wrapper">
+
+  <!-- AGREGADO 'relative' -->
+  <div class="auth-container text-center relative">
+
+      <!-- 1. BOTÓN CERRAR -->
+      <a routerLink="/public/home"
+         class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-full hover:bg-slate-100"
+         title="Volver al inicio">
+        <fa-icon [icon]="faTimes" class="text-xl"></fa-icon>
+      </a>
+
+      <div class="auth-header">
+        <fa-icon [icon]="faEnvelopeCircleCheck" class="text-cyan-400 text-6xl mb-4"></fa-icon>
+        <h1>¡Un último paso!</h1>
+        <p>Hemos enviado un enlace a tu correo. Por favor, haz clic en él para activar tu cuenta.</p>
+      </div>
+
+      <button class="btn--primary" (click)="resendVerification()" [disabled]="isSending()">
+        <ng-container *ngIf="isSending()">Enviando...</ng-container>
+        <ng-container *ngIf="!isSending()">Reenviar Correo</ng-container>
+      </button>
+
+      <!-- 2. LINK CORREGIDO -->
+      <p class="auth-link">
+        <a routerLink="/auth/login">Volver a Iniciar Sesión</a>
+      </p>
+  </div>
+</main>

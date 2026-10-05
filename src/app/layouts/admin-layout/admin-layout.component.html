@@ -1,0 +1,40 @@
+<!-- Contenedor Principal con la imagen de fondo -->
+<div class="flex h-screen fondo-clinica-principal relative overflow-hidden">
+
+  <!-- 1. OVERLAY OSCURO (Solo Móvil) -->
+  <!-- Cierra el menú si tocas fuera del sidebar -->
+  <div *ngIf="isSidebarOpen()"
+       (click)="closeSidebar()"
+       class="fixed inset-0 z-20 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity duration-300">
+  </div>
+
+  <!-- 2. SIDEBAR CONTAINER (Maneja la animación de entrada/salida) -->
+  <div class="fixed inset-y-0 left-0 z-30 w-72 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0"
+       [class.-translate-x-full]="!isSidebarOpen()"
+       [class.translate-x-0]="isSidebarOpen()">
+
+       <!-- ✅ AQUÍ LLAMAMOS AL SIDEBAR ESPECÍFICO DE ADMIN -->
+       <!-- (click)="closeSidebar()" intenta cerrar el menú al hacer click en un link -->
+       <app-admin-sidebar (click)="closeSidebar()"></app-admin-sidebar>
+
+  </div>
+
+  <!-- 3. CONTENIDO PRINCIPAL -->
+  <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+
+    <!-- Barra Móvil (Header con botón hamburguesa) -->
+    <div class="lg:hidden p-4 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-white/50 shadow-sm z-10">
+      <span class="font-bold text-slate-700 text-lg">Clínica HIA</span>
+      <button (click)="toggleSidebar()" class="text-slate-700 text-2xl focus:outline-none">
+        <fa-icon [icon]="isSidebarOpen() ? faTimes : faBars"></fa-icon>
+      </button>
+    </div>
+
+    <!-- ÁREA DE TRABAJO -->
+    <div class="flex-1 overflow-hidden relative">
+      <router-outlet></router-outlet>
+    </div>
+
+  </main>
+
+</div>

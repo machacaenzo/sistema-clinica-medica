@@ -1,0 +1,164 @@
+<div class="w-full h-full p-4 flex flex-col">
+
+  <!-- 1. CONTENEDOR PRINCIPAL GLASS -->
+  <div class="content-card animate-fade-in">
+
+    <!-- HEADER + KPI CARDS -->
+    <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3 drop-shadow-sm">
+          <fa-icon [icon]="icons.agenda" class="text-teal-600"></fa-icon>
+          Agenda del Día
+        </h2>
+        <p class="text-slate-600 font-medium text-sm">Pacientes programados para hoy</p>
+      </div>
+
+      <!-- TARJETAS RESUMEN -->
+      <div class="flex gap-4">
+        <div class="summary-glass">
+          <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Por Atender</span>
+          <span class="text-2xl font-black text-orange-500 drop-shadow-sm">{{ pendientes() }}</span>
+        </div>
+        <div class="summary-glass">
+          <span class="text-[10px] font-black text-slate-500 uppercase tracking-wider">Finalizados</span>
+          <span class="text-2xl font-black text-teal-600 drop-shadow-sm">{{ atendidos() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÁREA DE LISTA -->
+    <div class="table-section relative flex flex-col flex-1">
+
+      @if (loading()) {
+        <div class="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-sm z-10">
+          <div class="w-12 h-12 border-4 border-white/50 border-t-teal-500 rounded-full animate-spin"></div>
+        </div>
+      }
+
+      <!-- HEADER DE LA LISTA -->
+      <div class="grid grid-cols-12 px-6 py-4 border-b border-teal-500/20 bg-white/20 text-[11px] font-black text-slate-600 uppercase tracking-widest backdrop-blur-md">
+        <div class="col-span-2">Horario</div>
+        <div class="col-span-4">Paciente</div>
+        <div class="col-span-3 text-center">Estado</div>
+        <div class="col-span-3 text-right">Acción</div>
+      </div>
+
+      <!-- LISTA SCROLLABLE -->
+      <div class="overflow-y-auto custom-scrollbar flex-1 p-2 space-y-1">
+
+        @for (t of pacientesHoy(); track t.id) {
+          <div class="patient-row group">
+
+            <!-- HORA -->
+            <div class="col-span-2 font-mono text-lg font-bold text-slate-700 flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs shadow-sm border"
+                   [ngClass]="t.tipo === 'VIDEO' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-teal-50 text-teal-600 border-teal-100'">
+                <fa-icon [icon]="t.tipo === 'VIDEO' ? icons.video : icons.reloj"></fa-icon>
+              </div>
+              {{ t.hora }}
+            </div>
+
+            <!-- PACIENTE -->
+            <div class="col-span-4 pl-2">
+              <p class="font-bold text-slate-800 text-sm group-hover:text-teal-700 transition-colors">
+                {{ t.pacienteData.nombre }}
+              </p>
+              <div class="flex flex-wrap items-center gap-2 mt-0.5">
+                <span class="text-[10px] bg-white/50 px-1.5 rounded text-slate-500 border border-white/60">
+                  DNI: {{ t.pacienteData.dni }}
+                </span>
+                @if (t.pacienteData.obraSocial !== 'Particular') {
+                  <span class="text-[10px] font-bold text-teal-600">• {{ t.pacienteData.obraSocial }}</span>
+                }
+
+                <!-- ✅ BADGE: Resultados de Laboratorio -->
+                @if (t.estudiosListos) {
+                  <div class="animate-bounce-in flex items-center gap-1 bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter border border-indigo-200">
+                    <fa-icon [icon]="icons.lab" class="text-[10px]"></fa-icon>
+                    Resultados Listos
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- ESTADO -->
+            <div class="col-span-3 flex justify-center">
+              @switch (t.estado) {
+                @case ('En Sala') {
+                  <span class="status-badge activo flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></span> En Sala
+                  </span>
+                }
+                @case ('Confirmado') {
+                  <span class="status-badge pendiente">Por llegar</span>
+                }
+                @case ('En Atencion') {
+                  <span class="status-badge os bg-blue-50 text-blue-600 border-blue-200">En Consulta</span>
+                }
+                @case ('Finalizado') {
+                  <span class="status-badge inactivo bg-white/50">Atendido</span>
+                }
+              }
+            </div>
+
+            <!-- ACCIÓN -->
+            <div class="col-span-3 flex justify-end items-center gap-2">
+
+              @if (t.estado === 'Finalizado') {
+                 <span class="text-slate-400 text-xs font-bold italic flex items-center gap-1 opacity-70">
+                   <fa-icon [icon]="icons.listo"></fa-icon> Listo
+                 </span>
+              }
+              @else {
+
+                <!-- CASO VIDEO -->
+                @if (t.tipo === 'VIDEO') {
+                  @if (t.enlaceVideo) {
+                     <a [href]="t.enlaceVideo" target="_blank"
+                        class="bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-3 py-1.5 rounded-lg font-bold text-[10px] shadow-sm transition-all flex items-center gap-2 active:scale-95"
+                        title="Abrir Google Meet / Zoom">
+                        <fa-icon [icon]="icons.link"></fa-icon> Abrir Link
+                     </a>
+                  } @else {
+                     <a [routerLink]="['/sala-virtual', t.id]" target="_blank"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] shadow-md transition-all flex items-center gap-2 active:scale-95"
+                        title="Iniciar Jitsi">
+                        <fa-icon [icon]="icons.video"></fa-icon> Llamar
+                     </a>
+                  }
+
+                  <button (click)="atender(t)"
+                          class="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-[10px] font-bold border border-transparent hover:border-indigo-100 transition-all flex items-center gap-1"
+                          title="Llenar ficha médica">
+                    <fa-icon [icon]="icons.registrar"></fa-icon> Registrar
+                  </button>
+                }
+
+                <!-- CASO PRESENCIAL -->
+                @else {
+                   @if (t.estado === 'En Sala' || t.estado === 'En Atencion') {
+                     <button (click)="atender(t)"
+                             class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-lg shadow-teal-500/20 transition-all active:scale-95 flex items-center gap-2">
+                       <fa-icon [icon]="icons.atender"></fa-icon> ATENDER
+                     </button>
+                   } @else {
+                     <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wide">Esperando...</span>
+                   }
+                }
+              }
+            </div>
+
+          </div>
+        }
+
+        @if (pacientesHoy().length === 0 && !loading()) {
+          <div class="flex flex-col items-center justify-center h-64 text-slate-400">
+            <fa-icon [icon]="icons.agenda" class="text-4xl mb-3 opacity-20"></fa-icon>
+            <p class="font-medium">No hay pacientes programados para hoy.</p>
+          </div>
+        }
+
+      </div>
+    </div>
+  </div>
+</div>

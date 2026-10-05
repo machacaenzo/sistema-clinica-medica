@@ -1,0 +1,173 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+  <!-- MAX-WIDTH 6XL PARA 3 COLUMNAS -->
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl max-h-[85vh] flex flex-col overflow-hidden">
+
+    <!-- HEADER -->
+    <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+      <div>
+        <h3 class="font-bold text-xl text-slate-800">Gestión de Tareas</h3>
+        <p class="text-xs text-slate-500">Empleado: <span class="font-bold text-teal-600">{{ empleado.displayName }}</span></p>
+      </div>
+      <button (click)="cerrarModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 transition-colors">
+        <fa-icon [icon]="icons.faTimes" class="text-xl"></fa-icon>
+      </button>
+    </div>
+
+    <!-- BODY: 3 COLUMNAS -->
+    <div class="flex flex-col md:flex-row h-full overflow-hidden">
+
+      <!-- COL 1: PLANTILLAS (Izquierda) -->
+      <div class="w-full md:w-1/4 bg-slate-50 border-r border-slate-200 p-4 overflow-y-auto custom-scrollbar">
+        <h4 class="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
+          <fa-icon [icon]="icons.faClipboardCheck"></fa-icon> Plantillas Personales
+        </h4>
+
+        <div class="flex flex-col gap-2">
+          @for (p of plantillas(); track p.id) {
+            <div (click)="usarPlantilla(p)"
+                 class="group bg-white border border-slate-200 p-3 rounded-xl shadow-sm cursor-pointer hover:border-teal-400 hover:shadow-md transition-all relative">
+              <p class="font-bold text-slate-700 text-sm mb-1">{{ p.titulo }}</p>
+              <p class="text-xs text-slate-400 truncate">{{ p.descripcion }}</p>
+
+              <button (click)="borrarPlantilla(p.id!, $event)"
+                      class="absolute top-2 right-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <fa-icon [icon]="icons.faTrash" class="text-xs"></fa-icon>
+              </button>
+            </div>
+          }
+          @if (plantillas().length === 0) {
+            <p class="text-center text-xs text-slate-400 italic py-4">No tienes plantillas guardadas.</p>
+          }
+        </div>
+      </div>
+
+      <!-- COL 2: FORMULARIO (Centro) -->
+      <div class="w-full md:w-2/5 p-6 border-r border-slate-100 overflow-y-auto custom-scrollbar">
+
+        <h4 class="text-xs font-bold text-teal-600 uppercase mb-4 flex items-center gap-2">
+          @if (tareaEnEdicionId) {
+            <fa-icon [icon]="icons.faPen"></fa-icon> Editando Tarea
+          } @else {
+            <fa-icon [icon]="icons.faPlus"></fa-icon> Nueva Asignación
+          }
+        </h4>
+
+        <form [formGroup]="tareaForm" (ngSubmit)="guardarTarea()" class="flex flex-col gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">Título <span class="text-red-400">*</span></label>
+            <input type="text" formControlName="titulo" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-400">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">Descripción <span class="text-red-400">*</span></label>
+            <textarea formControlName="descripcion" rows="4" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-400 resize-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">Prioridad</label>
+              <select formControlName="prioridad" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white cursor-pointer">
+                <option value="Alta">🔴 Alta</option>
+                <option value="Media">🟡 Media</option>
+                <option value="Baja">🟢 Baja</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">Límite <span class="text-red-400">*</span></label>
+              <input type="date" formControlName="fechaLimite" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm cursor-pointer">
+            </div>
+          </div>
+
+          <!-- BOTONES DE ACCIÓN -->
+          <div class="flex flex-col gap-3 mt-4 pt-4 border-t border-slate-100">
+
+            <button type="submit"
+                    [disabled]="tareaForm.invalid"
+                    class="w-full bg-teal-500 hover:bg-teal-600 text-white py-2 rounded-full shadow-lg font-bold text-sm transition-all disabled:opacity-50">
+              {{ tareaEnEdicionId ? 'Actualizar Tarea' : 'Asignar Tarea' }}
+            </button>
+
+            @if (tareaEnEdicionId) {
+              <button type="button" (click)="cancelarEdicion()" class="w-full bg-slate-200 text-slate-600 py-2 rounded-full font-bold text-sm hover:bg-slate-300">
+                Cancelar Edición
+              </button>
+            } @else {
+              <button type="button" (click)="guardarComoPlantilla()" class="w-full border border-teal-500 text-teal-600 py-2 rounded-full font-bold text-sm hover:bg-teal-50">
+                Guardar como Plantilla
+              </button>
+            }
+          </div>
+        </form>
+      </div>
+
+      <!-- COL 3: LISTA DE TAREAS (Derecha) -->
+      <div class="flex-1 bg-slate-50/50 p-4 overflow-y-auto custom-scrollbar">
+        <h4 class="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2">
+          <fa-icon [icon]="icons.faTasks"></fa-icon> Historial de Tareas
+        </h4>
+
+        <div class="flex flex-col gap-3">
+          @for (t of tareasDelEmpleado(); track t.id) {
+            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all group"
+                 [class.border-l-4]="true"
+                 [ngClass]="{
+                   'border-l-red-500': t.prioridad === 'Alta',
+                   'border-l-yellow-500': t.prioridad === 'Media',
+                   'border-l-green-500': t.prioridad === 'Baja',
+                   'opacity-70': t.estado !== 'Pendiente'
+                 }">
+
+              <div class="flex justify-between items-start mb-1">
+                <span class="font-bold text-slate-700 text-sm" [class.line-through]="t.estado === 'Completada'">{{ t.titulo }}</span>
+                <!-- BADGE ESTADO -->
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
+                      [ngClass]="{
+                        'bg-orange-100 text-orange-600': t.estado === 'Pendiente',
+                        'bg-blue-100 text-blue-600': t.estado === 'En Proceso',
+                        'bg-green-100 text-green-600': t.estado === 'Completada'
+                      }">
+                  {{ t.estado }}
+                </span>
+              </div>
+
+              <p class="text-xs text-slate-500 mb-2 leading-relaxed">{{ t.descripcion }}</p>
+
+              <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+                <span class="text-[10px] text-slate-400 font-mono">
+                  {{ t.fechaLimite ? 'Vence: ' + t.fechaLimite : 'Sin fecha' }}
+                </span>
+
+                <!-- ACCIONES ITEM -->
+                <!-- ✅ CAMBIOS AQUÍ: Botones condicionales -->
+                <div class="flex gap-2">
+
+                  <button (click)="editarTarea(t)"
+                          [disabled]="t.estado !== 'Pendiente'"
+                          [title]="t.estado === 'Pendiente' ? 'Editar' : 'Solo editable si está Pendiente'"
+                          class="text-blue-400 hover:text-blue-600 disabled:text-slate-300 disabled:cursor-not-allowed transition-colors">
+                    <fa-icon [icon]="icons.faPen"></fa-icon>
+                  </button>
+
+                  <button (click)="borrarTarea(t)"
+                          [disabled]="t.estado !== 'Pendiente'"
+                          [title]="t.estado === 'Pendiente' ? 'Borrar' : 'Solo borrable si está Pendiente'"
+                          class="text-red-400 hover:text-red-600 disabled:text-slate-300 disabled:cursor-not-allowed transition-colors">
+                    <fa-icon [icon]="icons.faTrash"></fa-icon>
+                  </button>
+
+                </div>
+              </div>
+            </div>
+          }
+          @if (tareasDelEmpleado().length === 0) {
+            <div class="flex flex-col items-center justify-center h-32 text-slate-400 text-xs italic">
+              <fa-icon [icon]="icons.faTasks" class="text-2xl mb-2 opacity-30"></fa-icon>
+              El empleado no tiene tareas asignadas.
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

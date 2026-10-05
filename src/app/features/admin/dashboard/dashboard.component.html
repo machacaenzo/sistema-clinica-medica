@@ -1,0 +1,161 @@
+<!-- ✅ CORRECCIÓN 1: 'overflow-y-auto' permite bajar si la pantalla es chica -->
+<div class="w-full h-full p-4 md:p-8 flex flex-col gap-6 bg-slate-50/50 overflow-y-auto custom-scrollbar">
+
+  <!-- HEADER -->
+  <div class="flex flex-col md:flex-row justify-between items-center gap-4 shrink-0">
+    <div>
+      <h2 class="text-3xl font-black text-slate-800 tracking-tight">Centro de Comando</h2>
+      <p class="text-slate-500 font-medium text-sm">Visión global del negocio y seguridad</p>
+    </div>
+
+    <!-- FILTRO -->
+    <div class="flex gap-1 bg-white p-1 rounded-2xl border border-slate-200 shadow-sm shrink-0">
+      <button (click)="periodo.set('hoy')"
+              class="px-5 py-2 rounded-xl text-xs font-bold transition-all"
+              [ngClass]="periodo() === 'hoy' ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'">
+        Hoy
+      </button>
+      <button (click)="periodo.set('mes')"
+              class="px-5 py-2 rounded-xl text-xs font-bold transition-all"
+              [ngClass]="periodo() === 'mes' ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-100'">
+        Este Mes
+      </button>
+      <button (click)="exportarReporte()" class="w-10 h-full flex items-center justify-center text-red-500 hover:bg-red-50 rounded-xl transition-colors border-l border-slate-100 ml-1" title="Descargar PDF">
+        <fa-icon [icon]="icons.pdf" class="text-lg"></fa-icon>
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex-1 flex items-center justify-center min-h-[400px]">
+      <div class="w-16 h-16 border-4 border-slate-200 border-t-teal-500 rounded-full animate-spin"></div>
+    </div>
+  } @else if (metrics()) {
+
+    <!-- NIVEL 1: KPIs (Tarjetas) -->
+    <!-- Grid responsivo: 1 col (móvil), 2 col (tablet), 4/5 col (escritorio) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 shrink-0">
+
+      <!-- Balance -->
+      <div class="glass-panel p-5 bg-gradient-to-br from-slate-800 to-slate-900 text-white border-none shadow-xl cursor-pointer hover:scale-[1.02] transition-transform group relative sm:col-span-2 lg:col-span-1"
+           routerLink="/admin/caja">
+        <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"><fa-icon [icon]="icons.wallet" class="text-teal-400"></fa-icon></div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Balance Neto</p>
+        <h3 class="text-3xl font-black tracking-tight text-white">${{ metrics()!.financiero.balance | number }}</h3>
+      </div>
+
+      <!-- Ingresos -->
+      <div class="glass-panel p-5 border-l-4 border-l-teal-500 cursor-pointer hover:bg-white/80 transition-colors group" routerLink="/admin/caja">
+        <div class="flex justify-between items-start">
+           <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ingresos</p><h3 class="text-2xl font-black text-teal-700">${{ metrics()!.financiero.ingresos | number }}</h3></div>
+           <fa-icon [icon]="icons.up" class="text-teal-200 group-hover:text-teal-500 transition-colors text-xl"></fa-icon>
+        </div>
+      </div>
+
+      <!-- Gastos -->
+      <div class="glass-panel p-5 border-l-4 border-l-red-500 cursor-pointer hover:bg-white/80 transition-colors group" routerLink="/admin/caja">
+        <div class="flex justify-between items-start">
+           <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Gastos</p><h3 class="text-2xl font-black text-red-600">-${{ metrics()!.financiero.egresos | number }}</h3></div>
+           <fa-icon [icon]="icons.down" class="text-red-200 group-hover:text-red-500 transition-colors text-xl"></fa-icon>
+        </div>
+      </div>
+
+      <!-- Turnos -->
+      <div class="glass-panel p-5 border-l-4 border-l-indigo-500 cursor-pointer hover:bg-white/80 transition-colors" routerLink="/admin/turnos">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Volumen</p>
+        <h3 class="text-2xl font-black text-indigo-700">{{ metrics()!.operativo.totalTurnos }}</h3>
+        <p class="text-[10px] text-slate-400 mt-1">Turnos Totales</p>
+      </div>
+
+      <!-- Tasa -->
+      <div class="glass-panel p-5 border-l-4 border-l-orange-400">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ausentismo</p>
+        <h3 class="text-2xl font-black text-orange-600">{{ metrics()!.operativo.tasaCancelacion }}%</h3>
+        <p class="text-[10px] text-slate-400 mt-1">Cancelados</p>
+      </div>
+    </div>
+
+    <!-- NIVEL 2: EVOLUCIÓN (Línea) -->
+    <!-- ✅ CORRECCIÓN: Altura fija (h-80) para que no desaparezca -->
+    <div class="glass-panel p-6 shrink-0">
+      <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <fa-icon [icon]="icons.bar" class="text-teal-500"></fa-icon> Flujo de Caja (Evolución)
+      </h4>
+      <div class="h-64 w-full relative">
+        <canvas baseChart [data]="lineChartData" [type]="'line'" [options]="lineChartOptions"></canvas>
+      </div>
+    </div>
+
+    <!-- NIVEL 3: DETALLES OPERATIVOS -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0">
+
+      <!-- Ocupación Semanal -->
+      <div class="glass-panel p-6">
+         <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <fa-icon [icon]="icons.calendar" class="text-indigo-500"></fa-icon> Ocupación Semanal
+         </h4>
+         <div class="h-64 relative w-full">
+            <canvas baseChart [data]="weeklyChartData" [type]="'bar'" [options]="weeklyChartOptions"></canvas>
+         </div>
+      </div>
+
+      <!-- Distribución de Pagos -->
+      <div class="glass-panel p-6 flex flex-col items-center">
+         <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2 w-full">
+            <fa-icon [icon]="icons.pie" class="text-orange-500"></fa-icon> Medios de Pago
+         </h4>
+         <div class="h-64 relative w-full flex justify-center">
+            <canvas baseChart [data]="pieChartData" [type]="'doughnut'" [options]="pieChartOptions"></canvas>
+         </div>
+      </div>
+    </div>
+
+    <!-- NIVEL 4: AUDITORÍA (LOGS) -->
+    <!-- ✅ Esto es lo que no se veía. Al estar al final y tener scroll, ahora se verá. -->
+    <div class="glass-panel overflow-hidden shrink-0 mb-8">
+      <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+        <h4 class="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+          <fa-icon [icon]="icons.shield" class="text-rose-500"></fa-icon> Auditoría de Accesos
+        </h4>
+        <span class="text-[10px] font-bold bg-white border border-slate-200 px-2 py-1 rounded text-slate-500">Últimos ingresos</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+          <thead class="bg-slate-50 text-[10px] uppercase text-slate-400 font-bold border-b border-slate-100">
+            <tr>
+              <th class="px-6 py-3 whitespace-nowrap">Usuario</th>
+              <th class="px-6 py-3 whitespace-nowrap">Rol</th>
+              <th class="px-6 py-3 text-right whitespace-nowrap">Fecha y Hora</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-50">
+            @for (log of metrics()!.logsRecientes; track log.fecha) {
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="px-6 py-3 font-medium text-slate-800">{{ log.email }}</td>
+                <td class="px-6 py-3">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border"
+                        [ngClass]="{
+                          'bg-teal-50 text-teal-700 border-teal-100': log.rol === 'medico',
+                          'bg-indigo-50 text-indigo-700 border-indigo-100': log.rol === 'empleado',
+                          'bg-slate-100 text-slate-600 border-slate-200': log.rol === 'administrador',
+                          'bg-white text-slate-500 border-slate-100': log.rol === 'paciente'
+                        }">
+                    {{ log.rol }}
+                  </span>
+                </td>
+                <td class="px-6 py-3 text-right font-mono text-xs text-slate-400">
+                  {{ log.fecha.toDate() | date:'dd/MM/yyyy HH:mm:ss' }}
+                </td>
+              </tr>
+            }
+            @if(metrics()!.logsRecientes.length === 0) {
+               <tr><td colspan="3" class="text-center py-4 text-xs text-slate-400 italic">No hay logs registrados</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  }
+</div>

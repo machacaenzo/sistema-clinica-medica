@@ -1,0 +1,74 @@
+<div class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md animate-fade-in">
+
+  <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden border-4 border-rose-500/20 flex flex-col animate-slide-up">
+
+    <!-- HEADER ROJO DE ADVERTENCIA -->
+    <div class="bg-rose-600 p-8 text-white text-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:20px_20px] opacity-20"></div>
+      <fa-icon [icon]="icons.alert" class="text-5xl mb-4 animate-pulse"></fa-icon>
+      <h2 class="text-2xl font-black uppercase tracking-tighter">Acceso de Emergencia</h2>
+      <p class="text-rose-100 text-sm font-medium">Protocolo de Ruptura de Privacidad (Break-the-Glass)</p>
+    </div>
+
+    <div class="p-8">
+      <form [formGroup]="form" (ngSubmit)="ejecutarAccion()" class="space-y-6">
+
+        @if (necesitaConfigurarClave()) {
+          <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 mb-4">
+             <p class="text-xs text-indigo-700 font-bold leading-relaxed text-center">
+               <fa-icon [icon]="icons.shield"></fa-icon> Detectamos que no has configurado tu <b>Master Key</b>. Define una clave de seguridad única para acceder a datos sensibles en el futuro.
+             </p>
+          </div>
+        }
+
+        <!-- 1. MOTIVO -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="label-mini text-slate-400">Motivo de la Ruptura</label>
+            <select formControlName="motivo" class="input-field mt-1">
+              <option value="" disabled>Seleccione...</option>
+              <option value="Orden Judicial">⚖️ Orden Judicial</option>
+              <option value="Urgencia Médica">🚑 Urgencia con Riesgo de Vida</option>
+              <option value="Investigación Policial">👮 Investigación Policial</option>
+              <option value="Paciente Fallecido">🕯️ Trámite por Fallecimiento</option>
+            </select>
+          </div>
+          <div>
+            <label class="label-mini text-slate-400">Expediente / Referencia</label>
+            <input type="text" formControlName="referencia" class="input-field mt-1" placeholder="Ej: Oficio 123/25">
+          </div>
+        </div>
+
+        <!-- 2. CLAVE MASTER -->
+        <div>
+          <label class="label-mini text-slate-400">{{ necesitaConfigurarClave() ? 'Definir Nueva Master Key' : 'Master Key de Seguridad' }}</label>
+          <div class="relative mt-1">
+            <fa-icon [icon]="icons.lock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></fa-icon>
+            <input type="password" formControlName="clave" class="input-field !pl-12 font-black tracking-widest text-center" placeholder="••••••••">
+          </div>
+        </div>
+
+        <!-- 3. DECLARACIÓN JURADA -->
+        <label class="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer group">
+          <input type="checkbox" formControlName="juramento" class="mt-1 w-5 h-5 text-rose-600 rounded border-slate-300">
+          <span class="text-[11px] text-slate-600 leading-tight font-medium">
+            Declaro bajo juramento que este acceso está legalmente justificado. Entiendo que mi identidad y este motivo quedarán grabados en un <b>Log de Seguridad permanente</b> para auditoría.
+          </span>
+        </label>
+
+        <!-- ACCIONES -->
+        <div class="flex gap-3 pt-2">
+          <button type="button" (click)="cancelar.emit()" class="flex-1 py-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest text-xs">Cancelar</button>
+
+          <button type="submit" [disabled]="form.invalid || loading()"
+                  class="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl active:scale-95 disabled:opacity-30 transition-all">
+             @if (loading()) { <fa-icon [icon]="icons.sign" class="animate-spin mr-2"></fa-icon> Procesando... }
+             @else { {{ necesitaConfigurarClave() ? 'Configurar y Guardar' : 'Confirmar Acceso' }} }
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

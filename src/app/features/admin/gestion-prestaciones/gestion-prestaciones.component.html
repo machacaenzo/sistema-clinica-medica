@@ -1,0 +1,153 @@
+<div class="w-full h-full p-4 flex flex-col">
+  <div class="content-card animate-fade-in flex flex-col h-full">
+
+    <!-- HEADER -->
+    <div class="filters-area flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 drop-shadow-sm flex items-center gap-3">
+          <fa-icon [icon]="icons.service" class="text-indigo-600"></fa-icon> Catálogo de Servicios
+        </h2>
+        <p class="text-slate-600 font-medium text-sm">Define los tipos de consulta disponibles</p>
+      </div>
+
+      <button (click)="abrirModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2 active:scale-95">
+        <fa-icon [icon]="icons.plus"></fa-icon> Nuevo Servicio
+      </button>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-section overflow-hidden relative custom-scrollbar flex-1 rounded-3xl bg-white/30 border border-white/40 shadow-inner">
+      <div class="absolute inset-0 overflow-auto p-0">
+
+        <table class="glass-table w-full">
+          <thead class="sticky top-0 z-10 backdrop-blur-md bg-white/40">
+            <tr>
+              <th class="pl-6 py-4 w-1/3">Nombre del Servicio</th>
+              <th class="py-4 w-1/3">Tipo de Formulario (Médico)</th>
+              <th class="text-center py-4">Estado</th>
+              <th class="text-right pr-6 py-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of prestaciones(); track p.id) {
+              <tr class="transition-all duration-200 border-b border-indigo-100 hover:bg-white/60">
+
+                <td class="pl-6 py-4">
+                  <div class="flex flex-col">
+                    <span class="font-bold text-slate-800">{{ p.nombre }}</span>
+                    <span class="text-xs text-slate-500 italic">{{ p.descripcion || 'Sin descripción' }}</span>
+                  </div>
+                </td>
+
+                <td class="py-4">
+                  <span class="text-xs font-bold px-3 py-1 rounded-lg border uppercase tracking-wide"
+                    [ngClass]="{
+                      'bg-slate-100 text-slate-600 border-slate-200': p.tipoFormulario === 'GENERAL',
+                      'bg-teal-50 text-teal-700 border-teal-200': p.tipoFormulario === 'APTO_FISICO',
+                      'bg-orange-50 text-orange-700 border-orange-200': p.tipoFormulario === 'CONTROL_CRONICO'
+                    }">
+                    {{ getTipoLabel(p.tipoFormulario) }}
+                  </span>
+                </td>
+
+                <td class="py-4 text-center">
+                  <span class="status-badge" [ngClass]="p.estado === 'Activa' ? 'activo' : 'inactivo'">
+                    {{ p.estado }}
+                  </span>
+                </td>
+
+                <td class="text-right pr-6 py-4">
+                  <div class="flex justify-end gap-2">
+                    <button (click)="abrirModal(p)" class="icon-btn edit"><fa-icon [icon]="icons.edit"></fa-icon></button>
+                    <button (click)="borrar(p)" class="icon-btn toggle text-slate-300 hover:text-red-500"><fa-icon [icon]="icons.trash"></fa-icon></button>
+                  </div>
+                </td>
+
+              </tr>
+            }
+            @if (prestaciones().length === 0) {
+              <tr>
+                <td colspan="4" class="text-center py-20 text-slate-400 opacity-60">
+                  <p>No hay servicios configurados.</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+@if (isModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-white/20">
+
+      <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center">
+        <h3 class="font-bold text-lg text-indigo-900">{{ selectedPrestacion ? 'Editar' : 'Crear' }} Servicio</h3>
+        <button (click)="cerrarModal()" class="text-slate-400 hover:text-slate-600"><fa-icon [icon]="icons.close" class="text-lg"></fa-icon></button>
+      </div>
+
+      <div class="p-8">
+        <form [formGroup]="form" (ngSubmit)="guardar()" class="flex flex-col gap-5">
+
+          <div>
+            <label class="label-text">Nombre Comercial <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="nombre" class="input-field font-bold" placeholder="Ej: Chequeo Escolar">
+          </div>
+
+          <div>
+            <label class="label-text">Descripción</label>
+            <input type="text" formControlName="descripcion" class="input-field" placeholder="Ej: Incluye ECG y bucodental">
+          </div>
+
+          <div>
+            <label class="label-text">Configuración de Pantalla (Médico) <span class="text-red-500">*</span></label>
+            <select formControlName="tipoFormulario" class="input-field cursor-pointer bg-white">
+              <option value="GENERAL">🩺 Consulta Estándar (SOAP)</option>
+              <option value="APTO_FISICO">🏃 Apto Físico (Carga ECG + Certificado)</option>
+              <option value="CONTROL_CRONICO">🛡️ Control Crónico (Gráficos + Lab)</option>
+            </select>
+            <p class="text-[10px] text-slate-400 mt-1 pl-1">Define qué herramientas verá el médico al atender.</p>
+          </div>
+
+          <!-- ✅ NUEVO: VINCULACIÓN DE ESTUDIO PREVIO -->
+<div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+  <label class="label-text flex items-center gap-2 mb-2">
+    <fa-icon [icon]="icons.service" class="text-indigo-500"></fa-icon>
+    Estudio Previo Requerido (Opcional)
+  </label>
+  <div class="relative">
+    <select formControlName="idServicioRequerido" class="input-field cursor-pointer bg-white">
+  <option value="">Ninguno (Atención directa)</option>
+  @for (s of serviciosDisponibles(); track s.id) {
+    <!-- ✅ 's.precioFijo' ahora vendrá actualizado gracias al cambio en el servicio -->
+    <option [value]="s.id">{{ s.nombre }} - (${{ s.precioFijo }})</option>
+  }
+</select>
+    <div class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs">▼</div>
+  </div>
+  <p class="text-[9px] text-indigo-400 mt-2 font-bold uppercase tracking-tighter">
+    * Si seleccionas uno, el sistema obligará al paciente a realizar este estudio antes de la consulta.
+  </p>
+</div>
+          <div>
+             <label class="label-text">Estado</label>
+             <select formControlName="estado" class="input-field cursor-pointer bg-white">
+               <option value="Activa">Activa (Visible para turnos)</option>
+               <option value="Inactiva">Inactiva</option>
+             </select>
+          </div>
+
+          <div class="pt-4 flex justify-end gap-3 border-t border-slate-100">
+             <button type="button" (click)="cerrarModal()" class="px-5 py-2 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors">Cancelar</button>
+             <button type="submit" [disabled]="form.invalid" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-indigo-500/20 disabled:opacity-50">Guardar</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+}

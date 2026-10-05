@@ -1,0 +1,11 @@
+@import '../admin-theme';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Aseguramos que los paneles glass sean blancos por defecto para mejor contraste de gráficos
+.glass-panel {
+  @apply bg-white/60 backdrop-blur-xl border border-white/60;
+}

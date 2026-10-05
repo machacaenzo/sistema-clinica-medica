@@ -1,0 +1,38 @@
+/* Estilos ÚNICOS para la página de Login y Register */
+
+.auth-page-wrapper {
+  @apply flex items-center justify-center min-h-screen p-4;
+}
+
+.auth-container {
+  @apply w-full max-w-md bg-white/10 backdrop-blur-lg rounded-3xl shadow-lg;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 2.5rem;
+}
+
+.auth-header {
+  @apply text-center mb-10;
+  h1 { @apply text-4xl font-bold text-slate-700; }
+}
+
+.input-group {
+  @apply relative mb-5;
+  .input-icon { @apply absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl; }
+}
+
+.button-group {
+  @apply grid grid-cols-2 gap-4 mt-8 mb-6;
+}
+
+.btn--google {
+  // En lugar de "@apply btn", copiamos las utilidades base de .btn que están en styles.scss
+  @apply w-full font-bold py-3 px-4 transition-colors duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-full shadow-md;
+
+  // Y luego añadimos los estilos específicos del botón de Google
+  @apply bg-gray-100/70 hover:bg-white/80 text-gray-600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.auth-link {
+  @apply text-center mt-8 text-sm text-slate-600;
+  a { @apply font-bold text-cyan-600 hover:underline; }
+}

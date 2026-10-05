@@ -1,0 +1,111 @@
+<div class="w-full h-full p-4 flex flex-col">
+  <div class="content-card animate-fade-in flex flex-col h-full">
+
+    <!-- HEADER CON DOBLE ACCIÓN -->
+    <div class="filters-area flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+          <fa-icon [icon]="icons.vial" class="text-teal-600"></fa-icon> Servicios de Diagnóstico
+        </h2>
+        <p class="text-slate-600 font-medium text-sm">Precio Actual por Estudio: <span class="font-black text-teal-700">${{ precioMaestro() }}</span></p>
+      </div>
+
+      <div class="flex gap-3">
+        <!-- BOTÓN 1: CONFIGURAR PRECIO -->
+        <button (click)="abrirModalPrecio()" class="bg-slate-800 hover:bg-black text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2">
+          <fa-icon [icon]="icons.price"></fa-icon> Ajustar Tarifario
+        </button>
+
+        <!-- BOTÓN 2: NUEVO SERVICIO -->
+        <button (click)="abrirModalServicio()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2">
+          <fa-icon [icon]="icons.plus"></fa-icon> Nuevo Estudio
+        </button>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-section flex-1 relative overflow-hidden">
+      <div class="absolute inset-0 overflow-auto">
+        <table class="glass-table w-full">
+          <thead>
+            <tr>
+              <th class="pl-6 py-4">Estudio</th>
+              <th class="py-4 text-center">Tarifa</th>
+              <th class="py-4">Instrucciones</th>
+              <th class="text-right pr-6 py-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of servicios(); track s.id) {
+              <tr class="hover:bg-white/40">
+                <td class="pl-6 py-4 font-bold text-slate-800">{{ s.nombre }}</td>
+                <td class="py-4 text-center font-mono font-bold text-teal-600">${{ precioMaestro() }}</td>
+                <td class="py-4 text-xs text-slate-500 italic max-w-xs truncate">{{ s.instrucciones }}</td>
+                <td class="text-right pr-6 py-4">
+                  <div class="flex justify-end gap-2">
+                    <button (click)="abrirModalServicio(s)" class="icon-btn edit"><fa-icon [icon]="icons.edit"></fa-icon></button>
+                    <button (click)="borrar(s)" class="icon-btn toggle text-slate-300 hover:text-red-500"><fa-icon [icon]="icons.trash"></fa-icon></button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 1: PRECIO MAESTRO -->
+@if (isModalPrecioOpen()) {
+  <div class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-slate-900 rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden border border-white/10 p-8 text-center text-white">
+      <fa-icon [icon]="icons.price" class="text-5xl text-teal-400 mb-4"></fa-icon>
+      <h3 class="text-xl font-black mb-2">Ajustar Tarifario Global</h3>
+      <p class="text-slate-400 text-xs mb-8 uppercase tracking-widest">Este valor se aplicará a todos los estudios</p>
+
+      <form [formGroup]="formPrecio" (ngSubmit)="guardarPrecioMaestro()">
+        <div class="relative mb-8">
+           <span class="absolute left-6 top-1/2 -translate-y-1/2 text-teal-400 text-2xl font-black">$</span>
+           <input type="number" formControlName="nuevoPrecio" class="w-full bg-white/5 border border-white/10 rounded-2xl py-6 text-center text-4xl font-black outline-none focus:border-teal-500 transition-all">
+        </div>
+        <div class="flex gap-3">
+          <button type="button" (click)="isModalPrecioOpen.set(false)" class="flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:text-white">Cancelar</button>
+          <button type="submit" class="flex-1 bg-teal-600 py-4 rounded-2xl font-black uppercase tracking-widest active:scale-95 shadow-lg shadow-teal-500/20">Actualizar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL 2: SERVICIO INDIVIDUAL -->
+@if (isModalServicioOpen()) {
+  <div class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/20">
+      <div class="bg-indigo-50 px-8 py-6 border-b flex justify-between items-center">
+        <h3 class="font-black text-indigo-900 text-lg uppercase tracking-widest">Estudio: {{ selectedServicio ? 'Editar' : 'Nuevo' }}</h3>
+        <button (click)="isModalServicioOpen.set(false)" class="text-slate-400 hover:text-red-500"><fa-icon [icon]="icons.close" class="text-xl"></fa-icon></button>
+      </div>
+      <div class="p-10">
+        <form [formGroup]="formServicio" (ngSubmit)="guardarServicio()" class="flex flex-col gap-6">
+          <div>
+            <label class="label-text">Nombre de la Prueba</label>
+            <input type="text" formControlName="nombre" class="input-field font-bold" placeholder="Ej: Hemograma Completo">
+          </div>
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex justify-between items-center">
+            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Precio Institucional</span>
+            <span class="text-2xl font-black text-teal-600">${{ precioMaestro() }}</span>
+          </div>
+          <div>
+            <label class="label-text">Instrucciones al Paciente</label>
+            <textarea formControlName="instrucciones" rows="3" class="input-field" placeholder="Ayunos, vestimenta, etc."></textarea>
+          </div>
+          <div class="flex gap-4 mt-4">
+             <button type="button" (click)="isModalServicioOpen.set(false)" class="flex-1 py-4 rounded-2xl font-bold text-slate-400 hover:bg-slate-50">Cerrar</button>
+             <button type="submit" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 active:scale-95">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

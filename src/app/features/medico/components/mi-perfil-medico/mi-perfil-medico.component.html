@@ -1,0 +1,140 @@
+<div class="w-full h-full p-4 flex flex-col md:flex-row gap-6 animate-fade-in">
+
+  <!-- 1. TARJETA DE IDENTIFICACIÓN (Izquierda) -->
+  <div class="w-full md:w-1/3 flex flex-col">
+    <div class="bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-xl border border-white/50 overflow-hidden relative flex flex-col h-full">
+
+      <!-- Fondo Decorativo -->
+      <div class="h-32 bg-gradient-to-r from-cyan-500 to-teal-400 relative">
+        <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white/20 to-transparent"></div>
+      </div>
+
+      <!-- Contenido Perfil -->
+      <div class="px-6 pb-10 relative flex-1 flex flex-col items-center">
+
+        <!-- Foto -->
+        <div class="absolute -top-16 left-1/2 -translate-x-1/2 shadow-2xl rounded-full">
+          <img [src]="medico()?.foto || defaultImage"
+            class="w-32 h-32 rounded-full border-[6px] border-white/80 bg-white object-cover shadow-inner">
+        </div>
+
+        <div class="mt-20 text-center w-full">
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight drop-shadow-sm">{{ medico()?.nombre }}</h2>
+
+          <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
+            <span
+              class="px-4 py-1.5 rounded-full bg-white/60 text-teal-800 text-xs font-bold border border-white shadow-sm uppercase tracking-wider backdrop-blur-sm">
+              {{ medico()?.especialidades?.[0] || 'Médico Clínico' }}
+            </span>
+            <span
+              class="px-3 py-1.5 rounded-full bg-cyan-100/90 text-cyan-700 text-[10px] font-black border border-cyan-200 shadow-sm uppercase">
+              Habilitado
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-10 space-y-4 w-full">
+          <!-- Matrícula -->
+          <div
+            class="flex items-center gap-4 p-4 bg-white/50 rounded-2xl border border-white/60 shadow-sm transition-transform hover:scale-[1.02]">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-teal-600 shadow-md">
+              <fa-icon [icon]="icons.card"></fa-icon>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">Matrícula Profesional</p>
+              <p class="text-lg font-black text-slate-800">{{ medico()?.matricula || '---' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-auto pt-8">
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
+            <span class="relative flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+            <span class="text-xs font-bold text-emerald-700 uppercase tracking-wide">Médico Activo</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. ESQUEMA DE ATENCIÓN (Derecha) -->
+  <div class="flex-1 flex flex-col min-h-0">
+    <div class="bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-xl border border-white/50 p-8 h-full flex flex-col overflow-hidden">
+
+      <!-- Header de Agenda -->
+      <div class="mb-6 flex items-center gap-4 border-b border-slate-200/50 pb-6 shrink-0">
+        <div class="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-lg shadow-teal-500/30">
+          <fa-icon [icon]="icons.calendar" class="text-xl"></fa-icon>
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold text-slate-800">Agenda de Atención</h3>
+          <p class="text-sm text-slate-500 font-medium">Días y franjas horarias asignadas</p>
+        </div>
+      </div>
+
+      <!-- GRID DE DÍAS: Usamos flex-1 y overflow-y-auto para que el scroll sea solo de las tarjetas -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar pr-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
+
+          @for (dia of diasSemana; track dia) {
+            @let dataDia = getDisponibilidadDia(dia);
+            @let esActivo = dataDia?.activo;
+
+            <div class="rounded-[2rem] p-5 border transition-all duration-300 relative overflow-hidden group flex flex-col bg-white/80 border-white shadow-xl hover:shadow-2xl h-auto"
+                 [ngClass]="{'opacity-70 grayscale': !esActivo}">
+
+              <!-- Indicador Lateral -->
+              <div class="absolute left-0 top-0 bottom-0 w-1.5" [ngClass]="esActivo ? 'bg-teal-500' : 'bg-slate-300'"></div>
+
+              <!-- Título del Día -->
+              <div class="flex justify-between items-center mb-5 pl-2">
+                <span class="font-black text-xl text-slate-800">{{ dia }}</span>
+                @if (esActivo) {
+                  <span class="w-2.5 h-2.5 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)]"></span>
+                }
+              </div>
+
+              <!-- Lista de Turnos -->
+              <div class="flex flex-col gap-3 pl-2">
+                @if (esActivo && dataDia?.franjas?.length) {
+                  @for (franja of dataDia?.franjas; track $index) {
+                    <div class="flex items-center gap-4 bg-slate-50/50 p-3 rounded-2xl border border-slate-100/50 group-hover:bg-white transition-all shadow-sm">
+                      <div class="w-8 h-8 rounded-xl bg-teal-500 text-white flex items-center justify-center text-xs shadow-sm shrink-0">
+                        <fa-icon [icon]="icons.clock"></fa-icon>
+                      </div>
+                      <div class="flex flex-col">
+                        <span class="text-[9px] font-black text-teal-600 uppercase tracking-tighter">Turno {{ $index + 1 }}</span>
+                        <span class="font-mono text-slate-700 font-black text-sm leading-none whitespace-nowrap">
+                          {{ franja.inicio }} — {{ franja.fin }}
+                        </span>
+                      </div>
+                    </div>
+                  }
+                } @else {
+                  <div class="py-6 text-center opacity-30">
+                    <fa-icon [icon]="icons.none" class="text-xl mb-1 block"></fa-icon>
+                    <span class="text-[10px] font-bold uppercase">Sin Agenda</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-6 pt-4 text-center border-t border-slate-200/50 shrink-0">
+        <p class="text-[10px] text-slate-400 font-bold bg-white/40 inline-block px-5 py-2 rounded-full border border-white/60">
+          * Para modificar tu disponibilidad, contacta al Administrador.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>

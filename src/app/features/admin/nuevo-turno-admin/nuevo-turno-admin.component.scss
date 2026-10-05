@@ -1,0 +1,68 @@
+@import '../_admin-theme';
+
+// --- CONTENEDOR PRINCIPAL ---
+.wizard-glass {
+  background-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  @apply rounded-[2rem] shadow-2xl relative overflow-hidden flex flex-col h-full;
+}
+
+// --- HEADER ---
+.wizard-header {
+  background-color: rgba(255, 255, 255, 0.3);
+  @apply px-8 py-5 border-b border-white/40 flex justify-between items-center shrink-0;
+}
+
+// --- TARJETAS ---
+.selection-card {
+  @apply bg-white/60 border border-white/50 rounded-2xl p-4;
+  @apply shadow-sm cursor-pointer transition-all duration-200;
+  @apply flex items-center justify-between;
+
+  &:hover {
+    @apply bg-white/90 border-teal-400 shadow-md transform -translate-y-1;
+    h4 { @apply text-teal-700; }
+    .arrow-icon { @apply text-teal-500 translate-x-1; }
+  }
+
+  &.active {
+    @apply bg-teal-50 border-teal-500 ring-2 ring-teal-500/20;
+  }
+
+  .arrow-icon {
+    @apply text-slate-400 transition-all duration-300;
+  }
+}
+
+// --- CHIPS ---
+.time-chip {
+  @apply py-3 px-4 rounded-xl text-sm font-bold border transition-all duration-200 text-center;
+  @apply bg-white/50 border-white/60 text-slate-700;
+
+  &:hover:not(:disabled) {
+    @apply border-teal-400 text-teal-700 bg-white shadow-sm;
+  }
+
+  &.selected {
+    @apply bg-teal-600 text-white border-teal-600 shadow-lg shadow-teal-500/30 scale-105;
+  }
+}
+
+// --- STEPPER ---
+.step-dot {
+  @apply w-3 h-3 rounded-full bg-slate-400/30 transition-all duration-500;
+  &.active { @apply bg-teal-600 w-8 shadow-sm; }
+  &.completed { @apply bg-teal-400; }
+}
+
+// Animaciones
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

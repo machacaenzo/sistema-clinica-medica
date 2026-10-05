@@ -1,0 +1,113 @@
+<div class="min-h-screen bg-slate-50 pb-20">
+
+  <!-- ============================================ -->
+  <!-- 1. HEADER & BUSCADOR -->
+  <!-- ============================================ -->
+  <section class="bg-slate-900 text-white pt-32 pb-20 px-4 relative overflow-hidden">
+    <!-- Decoración Fondo -->
+    <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-indigo-600 rounded-full opacity-10 blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 right-0 w-[300px] h-[300px] bg-teal-500 rounded-full opacity-10 blur-[80px] translate-x-1/2 translate-y-1/2"></div>
+
+    <div class="max-w-4xl mx-auto relative z-10 text-center">
+      <span class="text-indigo-400 font-bold uppercase tracking-widest text-xs mb-2 block animate-fade-in">Coberturas Médicas</span>
+      <h1 class="text-4xl md:text-5xl font-black mb-6 animate-fade-in">Obras Sociales</h1>
+      <p class="text-slate-300 max-w-xl mx-auto mb-10 text-lg animate-slide-up">
+        Trabajamos con las principales prestadoras de salud. Busca por nombre o siglas para confirmar tu cobertura.
+      </p>
+
+      <!-- BUSCADOR -->
+      <div class="max-w-lg mx-auto relative group animate-slide-up">
+        <fa-icon [icon]="icons.search" class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors"></fa-icon>
+        <input
+          type="text"
+          [ngModel]="filtro()"
+          (ngModelChange)="filtro.set($event)"
+          placeholder="Ej: OSDE, PAMI, Swiss..."
+          class="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-slate-400 rounded-full py-4 pl-12 pr-6 focus:bg-white/20 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all shadow-xl"
+        >
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- 2. LISTADO DE TARJETAS -->
+  <!-- ============================================ -->
+  <section class="px-4 -mt-10 relative z-20">
+    <div class="max-w-6xl mx-auto">
+
+      @if (listaFiltrada().length > 0) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+
+          @for (os of listaFiltrada(); track os.id) {
+            <!-- ✅ TARJETA MEJORADA: Más sombra, borde más visible y hover reactivo -->
+            <div class="bg-white rounded-2xl p-5 shadow-md border border-slate-200
+                        hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-300 hover:-translate-y-1
+                        transition-all duration-300 group flex items-center gap-4 animate-fade-in cursor-default h-full">
+
+              <!-- LOGO O ICONO -->
+              <div class="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 overflow-hidden transition-all duration-300 border border-slate-100 shadow-sm"
+                   [ngClass]="os.logo ? 'bg-white p-1' : 'bg-indigo-50 text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white'">
+
+                @if (os.logo) {
+                  <img [src]="os.logo"
+                       class="w-full h-full object-contain"
+                       (error)="handleImageError($event)"
+                       alt="Logo OS">
+                } @else {
+                  <fa-icon [icon]="icons.medical" class="text-xl"></fa-icon>
+                }
+              </div>
+
+              <!-- DATOS -->
+              <div class="overflow-hidden flex-1">
+                <h3 class="font-bold text-slate-800 text-sm truncate group-hover:text-indigo-700 transition-colors" title="{{ os.nombre }}">
+                  {{ os.nombre }}
+                </h3>
+
+                <div class="flex items-center gap-2 mt-1.5">
+                  <!-- Siglas (si tiene) -->
+                  @if (os.siglas) {
+                    <span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 group-hover:bg-indigo-50 group-hover:text-indigo-600 group-hover:border-indigo-100 transition-colors">
+                      {{ os.siglas }}
+                    </span>
+                  }
+
+                  <!-- Check Activa -->
+                  <div class="flex items-center gap-1 ml-auto">
+                    <fa-icon [icon]="icons.check" class="text-teal-500 text-xs"></fa-icon>
+                    <span class="text-[10px] font-medium text-slate-400">Activa</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          }
+
+        </div>
+      }
+
+      <!-- ESTADO VACÍO -->
+      @else {
+        <div class="text-center py-16 bg-white rounded-3xl border border-slate-200 shadow-sm animate-fade-in max-w-md mx-auto mt-4">
+          <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 mx-auto mb-4 border border-slate-100">
+            <fa-icon [icon]="icons.note" class="text-2xl"></fa-icon>
+          </div>
+          <h3 class="text-lg font-bold text-slate-700">Sin resultados</h3>
+          <p class="text-slate-500 text-sm px-6 mt-2">
+            No encontramos coberturas que coincidan con "{{ filtro() }}".
+          </p>
+        </div>
+      }
+
+      <!-- FOOTER -->
+      <div class="mt-16 text-center pb-8 animate-fade-in">
+        <p class="text-slate-400 text-sm">
+          ¿Dudas sobre tu plan?
+          <a routerLink="/public/contacto" class="text-indigo-500 font-bold hover:text-indigo-600 hover:underline cursor-pointer transition-colors">Consúltanos aquí</a>.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+</div>

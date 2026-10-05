@@ -1,0 +1,139 @@
+<footer class="bg-slate-900 text-slate-300 pt-16 pb-8 border-t-4 border-cyan-500 font-sans">
+  <div class="container mx-auto px-6">
+
+    <!-- GRID PRINCIPAL -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+
+      <!-- COL 1: MARCA E INFO -->
+      <div class="space-y-5">
+        <!-- NOMBRE DINÁMICO DE LA CLÍNICA -->
+        <h2 class="text-3xl font-bold text-white tracking-tight uppercase">
+          {{ info()?.nombre || 'Clínica Médica' }}
+        </h2>
+
+        <p class="text-sm leading-relaxed text-slate-400 pr-4">
+          Comprometidos con tu bienestar. Brindamos atención médica integral con tecnología de vanguardia y un equipo humano de excelencia.
+        </p>
+
+        <!-- Redes Sociales -->
+        <div class="flex gap-3 pt-2">
+          <a href="#" class="social-btn" aria-label="Facebook">
+            <fa-icon [icon]="icons.facebook"></fa-icon>
+          </a>
+          <a href="#" class="social-btn" aria-label="Instagram">
+            <fa-icon [icon]="icons.instagram"></fa-icon>
+          </a>
+          <a href="#" class="social-btn" aria-label="Twitter">
+            <fa-icon [icon]="icons.twitter"></fa-icon>
+          </a>
+          <a href="#" class="social-btn" aria-label="LinkedIn">
+            <fa-icon [icon]="icons.linkedin"></fa-icon>
+          </a>
+        </div>
+      </div>
+
+      <!-- COL 2: INSTITUCIONAL -->
+      <div>
+        <h3 class="text-white font-bold uppercase tracking-wider text-sm mb-6">Institucional</h3>
+        <ul class="space-y-3">
+          <li>
+            <a routerLink="/public/nosotros" class="footer-link">
+              <fa-icon [icon]="icons.arrow"></fa-icon> Sobre Nosotros
+            </a>
+          </li>
+
+          <!-- ✅ AGREGADO: ACERCA DE (FICHA DEL ALUMNO) -->
+          <li>
+            <a routerLink="/public/acerca-de" class="footer-link">
+              <fa-icon [icon]="icons.arrow"></fa-icon> Acerca de
+            </a>
+          </li>
+
+          <li>
+            <a routerLink="/public/staff" class="footer-link">
+              <fa-icon [icon]="icons.arrow"></fa-icon> Nuestro Staff
+            </a>
+          </li>
+          <li>
+            <a routerLink="/public/obras-sociales" class="footer-link">
+              <fa-icon [icon]="icons.arrow"></fa-icon> Obras Sociales
+            </a>
+          </li>
+          <li>
+            <a routerLink="/public/contacto" class="footer-link">
+              <fa-icon [icon]="icons.arrow"></fa-icon> Trabaja con nosotros
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- COL 3: PACIENTES -->
+      <div>
+        <h3 class="text-white font-bold uppercase tracking-wider text-sm mb-6">Pacientes</h3>
+        <ul class="space-y-3">
+          <li>
+            <a routerLink="/public/solicitar-turno" class="footer-link">
+              <fa-icon [icon]="icons.arrow"></fa-icon> Solicitar Turno
+            </a>
+          </li>
+          <li>
+            <a routerLink="/public/mis-turnos" class="footer-link">
+              <fa-icon [icon]="icons.arrow"></fa-icon> Mis Resultados
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- COL 4: CONTACTO -->
+      <div>
+        <h3 class="text-white font-bold uppercase tracking-wider text-sm mb-6">Contacto</h3>
+        <ul class="space-y-4 text-sm text-slate-400">
+
+          <li class="flex items-start gap-3">
+            <fa-icon [icon]="icons.map" class="text-cyan-500 mt-1 shrink-0"></fa-icon>
+            <span class="hover:text-white transition-colors">
+              {{ info()?.direccion || 'Dirección no disponible' }}
+            </span>
+          </li>
+
+          <li class="flex items-center gap-3">
+            <fa-icon [icon]="icons.phone" class="text-cyan-500 shrink-0"></fa-icon>
+            <span class="hover:text-white transition-colors">
+              {{ info()?.telefono || 'Teléfono no disponible' }}
+            </span>
+          </li>
+
+          <li class="flex items-center gap-3">
+            <fa-icon [icon]="icons.email" class="text-cyan-500 shrink-0"></fa-icon>
+            <span class="hover:text-white transition-colors">
+              {{ info()?.email || 'Email no disponible' }}
+            </span>
+          </li>
+
+          <li class="flex items-start gap-3 pt-2">
+            <fa-icon [icon]="icons.clock" class="text-cyan-500 mt-1 shrink-0"></fa-icon>
+            <div>
+              <p class="font-bold text-white text-xs uppercase mb-1">Horarios de Atención</p>
+              <p>{{ info()?.horarioApertura || '08:00' }} - {{ info()?.horarioCierre || '20:00' }} hs</p>
+            </div>
+          </li>
+
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- SEPARADOR -->
+    <div class="border-t border-slate-800 my-8"></div>
+
+    <!-- FOOTER BOTTOM (Centrado y Limpio) -->
+    <div class="flex items-center justify-center text-xs text-slate-500">
+      <p class="text-center">
+        &copy; {{ currentYear }}
+        <strong class="text-slate-300">{{ info()?.nombre || 'Clínica Médica' }}</strong>.
+        Todos los derechos reservados.
+      </p>
+    </div>
+
+  </div>
+</footer>

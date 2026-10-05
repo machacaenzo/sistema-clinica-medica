@@ -1,0 +1,83 @@
+<aside class="w-full h-full">
+  <div class="sidebar-glass bg-indigo-50/60 border-r border-indigo-100">
+
+    <!-- 1. HEADER (LOGO) -->
+    <div class="sidebar-header flex flex-col items-center gap-3">
+      @if (clinicaService.clinicaData()?.logo) {
+        <img [src]="clinicaService.clinicaData()?.logo"
+             alt="Logo"
+             class="w-16 h-16 object-contain drop-shadow-md">
+      } @else {
+        <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+          <fa-icon [icon]="icons.perfil"></fa-icon>
+        </div>
+      }
+      <h1 class="text-lg font-black text-slate-800 tracking-tight">Portal Staff</h1>
+    </div>
+
+    <!-- 2. PERFIL -->
+    @if (perfil(); as p) {
+      <div class="profile-section">
+        <img [src]="p.foto || defaultImage" (error)="handleImageError($event)">
+        <h3 class="text-slate-800 font-bold text-base text-center leading-tight">{{ p.nombre }}</h3>
+        <span class="role-badge bg-indigo-50 text-indigo-600 border-indigo-200">{{ p.puesto }}</span>
+      </div>
+    }
+
+    <!-- 3. NAVEGACIÓN -->
+    <nav class="flex-1 overflow-y-auto py-2 px-2 custom-scrollbar">
+      <ul class="space-y-1">
+
+        <!-- GRUPO: PERSONAL -->
+        <li class="px-6 pt-4 pb-2 text-[10px] font-black text-indigo-900/60 uppercase tracking-widest">Mi Espacio</li>
+        <li><a routerLink="/empleado/mi-perfil" class="nav-link" routerLinkActive="active"><fa-icon [icon]="icons.perfil"></fa-icon> <span>Mi Perfil</span></a></li>
+        <li><a routerLink="/empleado/mis-tareas" class="nav-link" routerLinkActive="active"><fa-icon [icon]="icons.tareas"></fa-icon> <span>Mis Tareas</span></a></li>
+
+        <!-- GRUPO: ASISTENCIA (Enfermeros) -->
+        @if (esEnfermeria) {
+          <li class="px-6 pt-6 pb-2 text-[10px] font-black text-indigo-900/60 uppercase tracking-widest border-t border-white/10 mt-2">Asistencia</li>
+          <li><a routerLink="/empleado/triage" class="nav-link" routerLinkActive="active"><fa-icon [icon]="icons.triage"></fa-icon> <span>Triage / Signos</span></a></li>
+        }
+
+        <!-- ✅ GRUPO: DIAGNÓSTICO (Laboratorio) -->
+        @if (esLaboratorio) {
+          <li class="px-6 pt-6 pb-2 text-[10px] font-black text-indigo-900/60 uppercase tracking-widest border-t border-white/10 mt-2">Diagnóstico</li>
+          <li>
+            <a routerLink="/empleado/laboratorio" class="nav-link" routerLinkActive="active">
+              <fa-icon [icon]="icons.laboratorio"></fa-icon> <span>Carga de Análisis</span>
+            </a>
+          </li>
+        }
+
+        <!-- GRUPO: GESTIÓN CLÍNICA (Secretarias) -->
+        @if (esAdministrativo) {
+          <li class="px-6 pt-6 pb-2 text-[10px] font-black text-indigo-900/60 uppercase tracking-widest border-t border-white/10 mt-2">Recepción</li>
+          <li><a routerLink="/empleado/turnos" class="nav-link" routerLinkActive="active"><fa-icon [icon]="icons.turnos"></fa-icon> <span>Turnos</span></a></li>
+          <li><a routerLink="/empleado/pacientes" class="nav-link" routerLinkActive="active"><fa-icon [icon]="icons.pacientes"></fa-icon> <span>Pacientes</span></a></li>
+          <li><a routerLink="/empleado/medicos" class="nav-link" routerLinkActive="active"><fa-icon [icon]="icons.medicos"></fa-icon> <span>Médicos</span></a></li>
+        }
+
+        <!-- GRUPO: LOGÍSTICA -->
+        @if (accesoInsumos) {
+          <li class="px-6 pt-6 pb-2 text-[10px] font-black text-indigo-900/60 uppercase tracking-widest border-t border-white/10 mt-2">Logística</li>
+          <li><a routerLink="/empleado/insumos" class="nav-link" routerLinkActive="active"><fa-icon [icon]="icons.insumos"></fa-icon> <span>Insumos</span></a></li>
+        }
+
+        <!-- GRUPO: SUPERVISIÓN -->
+        @if (esJefe) {
+          <li class="px-6 pt-6 pb-2 text-[10px] font-black text-indigo-900/60 uppercase tracking-widest border-t border-white/10 mt-2">Liderazgo</li>
+          <li><a routerLink="/empleado/equipo" class="nav-link" routerLinkActive="active"><fa-icon [icon]="icons.equipo"></fa-icon> <span>Gestionar Equipo</span></a></li>
+        }
+
+      </ul>
+    </nav>
+
+    <!-- 4. LOGOUT -->
+    <div class="p-6 mt-auto border-t border-white/10 bg-white/5">
+      <button (click)="authService.logout()" class="logout-btn">
+        <fa-icon [icon]="icons.logout"></fa-icon> <span>Salir</span>
+      </button>
+    </div>
+
+  </div>
+</aside>

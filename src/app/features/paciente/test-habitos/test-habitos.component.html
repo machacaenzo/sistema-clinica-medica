@@ -1,0 +1,136 @@
+<div class="glass-panel p-6 mt-8 animate-fade-in">
+
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h3 class="text-xl font-black text-slate-800 tracking-tight">Evaluaciones de Estilo de Vida</h3>
+      <p class="text-xs text-slate-500 font-medium">Cuestionarios internacionales validados (OMS)</p>
+    </div>
+
+    <!-- ✅ BOTÓN PARA ABRIR HISTORIAL (Sustituye a la lista amontonada) -->
+    <button (click)="modalHistorialAbierto.set(true)"
+            type="button"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 text-white text-xs font-bold shadow-lg hover:bg-black transition-all active:scale-95">
+      <fa-icon [icon]="icons.historial"></fa-icon> Ver Historial
+    </button>
+  </div>
+
+  <!-- TARJETAS DE INICIO (Mantenelas igual) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Alcohol -->
+    <div (click)="abrirTest('ALCOHOL')" class="cursor-pointer bg-white/40 p-4 rounded-[2rem] border border-white/60 hover:shadow-xl transition-all group">
+      <div class="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <fa-icon [icon]="icons.alcohol"></fa-icon>
+      </div>
+      <h4 class="font-bold text-slate-800 text-xs">Alcohol</h4>
+      <p class="text-[9px] text-slate-400 uppercase font-black">AUDIT</p>
+    </div>
+
+    <!-- Tabaquismo -->
+    <div (click)="abrirTest('TABAQUISMO')" class="cursor-pointer bg-white/40 p-4 rounded-[2rem] border border-white/60 hover:shadow-xl transition-all group">
+      <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <fa-icon [icon]="icons.tabaco"></fa-icon>
+      </div>
+      <h4 class="font-bold text-slate-800 text-xs">Tabaquismo</h4>
+      <p class="text-[9px] text-slate-400 uppercase font-black">Fagerström</p>
+    </div>
+
+    <!-- Actividad -->
+    <div (click)="abrirTest('ACTIVIDAD_FISICA')" class="cursor-pointer bg-white/40 p-4 rounded-[2rem] border border-white/60 hover:shadow-xl transition-all group">
+      <div class="w-10 h-10 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <fa-icon [icon]="icons.actividad"></fa-icon>
+      </div>
+      <h4 class="font-bold text-slate-800 text-xs">Actividad Física</h4>
+      <p class="text-[9px] text-slate-400 uppercase font-black">IPAQ-SF</p>
+    </div>
+
+    <!-- Diabetes -->
+    <div (click)="abrirTest('DIABETES')" class="cursor-pointer bg-white/40 p-4 rounded-[2rem] border border-white/60 hover:shadow-xl transition-all group">
+      <div class="w-10 h-10 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <fa-icon [icon]="icons.ok"></fa-icon>
+      </div>
+      <h4 class="font-bold text-slate-800 text-xs">Diabetes</h4>
+      <p class="text-[9px] text-slate-400 uppercase font-black">FINDRISC</p>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- ✅ MODAL DE HISTORIAL DE RESULTADOS (NUEVO) -->
+<!-- ========================================================================== -->
+@if (modalHistorialAbierto()) {
+  <div class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-white/40 flex flex-col animate-slide-up h-[80vh]">
+
+      <!-- Header del Modal -->
+      <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-slate-800 text-white flex items-center justify-center shadow-lg">
+            <fa-icon [icon]="icons.historial"></fa-icon>
+          </div>
+          <div>
+            <h3 class="font-black text-slate-800 leading-tight">Historial de Evaluaciones</h3>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Evolución del estilo de vida</p>
+          </div>
+        </div>
+        <button type="button" (click)="modalHistorialAbierto.set(false)" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-300 hover:text-red-500 transition-all">
+          <fa-icon [icon]="icons.close" class="text-xl"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Cuerpo con Scroll -->
+      <div class="flex-1 overflow-y-auto p-6 custom-scrollbar space-y-4 bg-slate-50/30">
+
+        @for (reg of historial(); track reg.id) {
+          <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+            <div class="flex items-center gap-4">
+              <!-- Icono dinámico -->
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md"
+                   [ngClass]="{
+                     'bg-indigo-500': reg.tipo === 'ALCOHOL',
+                     'bg-rose-500': reg.tipo === 'TABAQUISMO',
+                     'bg-teal-500': reg.tipo === 'ACTIVIDAD_FISICA',
+                     'bg-orange-500': reg.tipo === 'DIABETES'
+                   }">
+                <fa-icon [icon]="getIcon(reg.tipo)" class="text-xl"></fa-icon>
+              </div>
+
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ reg.tipo }}</span>
+                  <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">Score: {{ reg.score }}</span>
+                </div>
+                <h4 class="font-black text-base leading-tight" [ngClass]="reg.color">
+                  {{ reg.resultado }}
+                </h4>
+              </div>
+            </div>
+
+            <!-- Fecha y hora a la derecha -->
+            <div class="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-6 shrink-0">
+               <p class="text-xs font-black text-slate-700">{{ reg.fecha.toDate() | date:'dd/MM/yyyy' }}</p>
+               <p class="text-[10px] font-bold text-slate-400 uppercase">{{ reg.fecha.toDate() | date:'HH:mm' }} hs</p>
+            </div>
+          </div>
+        } @empty {
+          <div class="flex flex-col items-center justify-center py-20 text-slate-300 opacity-50">
+             <fa-icon [icon]="icons.historial" class="text-5xl mb-4"></fa-icon>
+             <p class="font-bold uppercase tracking-widest text-xs">Sin registros previos</p>
+          </div>
+        }
+
+      </div>
+
+      <!-- Footer Modal -->
+      <div class="p-6 bg-white border-t border-slate-100 shrink-0 text-center">
+         <p class="text-[10px] text-slate-400 font-medium">Los datos mostrados son de carácter informativo para el seguimiento médico.</p>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- Mantené el modal de hacer el test que ya tenías al final -->
+@if (modalAbierto()) {
+  <app-modal-test-habito [tipo]="testSeleccionado()" (cerrar)="modalAbierto.set(false)"></app-modal-test-habito>
+}

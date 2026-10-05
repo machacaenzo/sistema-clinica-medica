@@ -1,0 +1,27 @@
+// Importamos el tema global del admin (Variables, Mixins, Clases Glass)
+@import '../../../admin/admin-theme';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Contenedor centrado para la tarjeta de video
+.video-container {
+  @apply w-full h-full flex items-center justify-center p-4;
+}
+
+// Label estilo Admin
+.label-main {
+  @apply block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1 tracking-wide;
+}
+
+// Input que hereda del tema pero podemos ajustar si hace falta
+.input-field {
+  @apply bg-slate-50/50 border-slate-200 focus:bg-white;
+}
+
+// Ajuste para textarea
+textarea.input-field {
+  @apply resize-none;
+}

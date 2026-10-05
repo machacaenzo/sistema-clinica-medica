@@ -1,0 +1,248 @@
+<div class="w-full h-full p-4 flex flex-col">
+  <div class="content-card animate-fade-in">
+
+    <!-- TOOLBAR -->
+    <div class="filters-area">
+      <div class="w-full md:w-auto">
+        <h2 class="text-2xl font-bold text-slate-800 drop-shadow-sm">Staff Médico</h2>
+        <p class="text-slate-600 font-medium text-sm">Gestión de profesionales y honorarios</p>
+      </div>
+
+      <div class="w-full md:w-64 relative">
+        <fa-icon [icon]="icons.faSearch" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 z-10"></fa-icon>
+        <input type="text" placeholder="Buscar médico..." class="search-glass" (input)="onSearch($event)">
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-section overflow-hidden relative custom-scrollbar">
+      <div class="absolute inset-0 overflow-auto p-4">
+
+        <!-- Desktop -->
+        <div class="hidden md:block">
+          <table class="glass-table w-full table-fixed">
+            <thead class="sticky top-0 z-10">
+              <tr>
+                <th class="pl-6 text-left py-5 w-auto">Profesional</th>
+                <th class="text-left py-5 w-[20%]">Especialidad</th>
+                <th class="text-left py-5 w-[12%]">Matrícula</th>
+                <th class="text-center py-5 w-[100px]">Consulta</th>
+                <th class="text-center py-5 w-[140px]">Agenda</th>
+                <th class="text-right pr-6 py-5 w-[100px]">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of filteredMedicos(); track m.uid) {
+                <tr class="transition-all duration-200 border-b border-teal-500/30 hover:bg-white/40">
+
+                  <td class="pl-6 py-4 align-middle truncate">
+                    <div class="flex items-center gap-3">
+                      <img [src]="m.fotoUsuario || defaultImage"
+                           (error)="handleImageError($event)"
+                           class="w-10 h-10 rounded-full object-cover border-2 border-white/60 shadow-sm bg-white min-w-[2.5rem]">
+                      <div class="truncate">
+                        <div class="font-bold text-slate-800 truncate">{{ m.displayName }}</div>
+                        <div class="text-xs text-slate-500 font-mono truncate">{{ m.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="py-4 align-middle text-left truncate">
+                    <span class="inline-block px-3 py-1 rounded-lg text-xs font-bold bg-cyan-100 text-cyan-700 border border-cyan-200">
+                      {{ m.especialidad }}
+                    </span>
+                  </td>
+
+                  <td class="py-4 align-middle text-left">
+                    <span class="font-mono text-slate-600 text-sm font-bold">{{ m.matricula }}</span>
+                  </td>
+
+                  <td class="py-4 align-middle text-center font-bold text-slate-700">
+                    {{ m.valorConsulta ? '$' + m.valorConsulta : '--' }}
+                  </td>
+
+                  <td class="text-center py-4 align-middle">
+                    @if (m.agendaConfigurada) {
+                      <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-teal-700 bg-teal-100/80 px-2 py-1 rounded-full border border-teal-200/50">
+                        <fa-icon [icon]="icons.faCalendarCheck"></fa-icon> Activa
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-slate-500 bg-slate-100 px-2 py-1 rounded-full border border-slate-200">
+                        Sin Horarios
+                      </span>
+                    }
+                  </td>
+
+                  <td class="text-right pr-6 py-4 align-middle">
+                    <div class="flex justify-end">
+                      <button (click)="openEditModal(m)" class="icon-btn edit" title="Configurar Agenda">
+                        <fa-icon [icon]="icons.faEdit"></fa-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile -->
+        <div class="md:hidden flex flex-col gap-3">
+          @for (m of filteredMedicos(); track m.uid) {
+            <div class="bg-white/40 p-4 rounded-2xl border border-white/50 shadow-sm">
+              <div class="flex items-center gap-3 mb-3">
+                <img [src]="m.fotoUsuario || defaultImage" (error)="handleImageError($event)" class="w-12 h-12 rounded-full border border-white bg-white">
+                <div>
+                  <h3 class="font-bold text-slate-800">{{ m.displayName }}</h3>
+                  <span class="text-xs text-cyan-600 font-bold block">{{ m.especialidad }}</span>
+                </div>
+                <button (click)="openEditModal(m)" class="icon-btn edit ml-auto"><fa-icon [icon]="icons.faEdit"></fa-icon></button>
+              </div>
+              <div class="mt-2 pt-2 border-t border-slate-200/50 flex justify-between items-center">
+                 <span class="text-xs font-mono text-slate-500">MN: {{ m.matricula }}</span>
+                 @if (m.valorConsulta) {
+                   <span class="text-sm font-bold text-slate-700">${{ m.valorConsulta }}</span>
+                 }
+              </div>
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+@if (isModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+
+      <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-xl text-slate-800">Configuración Profesional</h3>
+          <p class="text-xs text-slate-500">Médico: <span class="font-bold">{{ selectedMedico?.displayName }}</span></p>
+        </div>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+          <fa-icon [icon]="icons.faTimes" class="text-xl"></fa-icon>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto custom-scrollbar">
+        <form [formGroup]="medicoForm" (ngSubmit)="saveChanges()">
+
+          <!-- DATOS BASICOS -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">Especialidad</label>
+              <select formControlName="especialidad" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white">
+                <option value="Medicina Clínica">Medicina Clínica</option>
+                <option value="Medicina General">Medicina General</option>
+                <option value="Medicina de Familia">Medicina de Familia</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">Matrícula</label>
+              <input type="text" formControlName="matricula" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">Duración Turno (min)</label>
+              <input type="number" formControlName="duracionTurno" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1 flex items-center gap-1">Valor Consulta ($) <span class="text-red-400">*</span></label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                <input type="number" formControlName="valorConsulta" class="input-field w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm font-bold text-slate-700">
+              </div>
+            </div>
+          </div>
+
+          <hr class="border-slate-100 mb-6">
+
+          <!-- AGENDA COMPLEJA (Franjas) -->
+          <div class="mb-4">
+            <h4 class="text-sm font-bold text-cyan-600 uppercase mb-3 flex items-center gap-2">
+              <fa-icon [icon]="icons.faClock"></fa-icon> Horarios de Atención
+            </h4>
+
+            <div class="grid grid-cols-1 gap-3" formArrayName="dias">
+              @for (diaCtrl of diasArray.controls; track $index) {
+                <div [formGroupName]="$index"
+                     class="border rounded-xl transition-all duration-200 overflow-hidden"
+                     [ngClass]="diaCtrl.get('activo')?.value ? 'border-teal-200 bg-white shadow-sm' : 'border-slate-100 bg-slate-50/50 opacity-70'">
+
+                  <div class="flex items-center justify-between p-3 bg-opacity-50" [ngClass]="diaCtrl.get('activo')?.value ? 'bg-teal-50' : ''">
+                    <label class="flex items-center gap-3 cursor-pointer select-none">
+                      <input type="checkbox" formControlName="activo" class="w-5 h-5 accent-teal-500 rounded cursor-pointer">
+                      <span class="font-bold text-sm" [ngClass]="diaCtrl.get('activo')?.value ? 'text-teal-700' : 'text-slate-500'">
+                        {{ diaCtrl.get('dia')?.value }}
+                      </span>
+                    </label>
+
+                    @if (diaCtrl.get('activo')?.value) {
+                      <button type="button" (click)="agregarFranja($index)" class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded-md font-bold hover:bg-teal-200 transition-colors flex items-center gap-1">
+                        <fa-icon [icon]="icons.faPlus"></fa-icon> Agregar Horario
+                      </button>
+                    }
+                  </div>
+
+                  <!-- Lista de Franjas -->
+                  @if (diaCtrl.get('activo')?.value) {
+                    <div class="p-3 pt-0 flex flex-col gap-2 bg-teal-50/30" formArrayName="franjas">
+                      @for (franja of getFranjas($index).controls; track franja; let fIndex = $index) {
+
+                        <div [formGroupName]="fIndex" class="flex items-center gap-2 animate-fade-in mt-2">
+                          <span class="text-xs text-slate-400 font-mono">{{ fIndex + 1 }}.</span>
+
+                          <!-- SELECTOR INICIO -->
+                          <div class="relative">
+                            <select formControlName="inicio"
+                                    class="appearance-none bg-white border border-slate-300 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-teal-400 w-24 text-center cursor-pointer font-bold text-slate-700">
+                              @for (hora of horariosOptions; track hora) {
+                                <option [value]="hora">{{ hora }}</option>
+                              }
+                            </select>
+                          </div>
+
+                          <span class="text-slate-400 text-xs font-bold">a</span>
+
+                          <!-- SELECTOR FIN -->
+                          <div class="relative">
+                            <select formControlName="fin"
+                                    class="appearance-none bg-white border border-slate-300 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-teal-400 w-24 text-center cursor-pointer font-bold text-slate-700">
+                              @for (hora of horariosOptions; track hora) {
+                                <option [value]="hora">{{ hora }}</option>
+                              }
+                            </select>
+                          </div>
+
+                          <button type="button" (click)="eliminarFranja($index, fIndex)" class="ml-auto w-6 h-6 flex items-center justify-center text-slate-300 hover:text-red-500 transition-colors">
+                            <fa-icon [icon]="icons.faTrash" class="text-xs"></fa-icon>
+                          </button>
+                        </div>
+
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button type="button" (click)="closeModal()" class="px-6 py-2 text-slate-600 hover:bg-slate-100 rounded-full font-medium text-sm transition-colors">Cancelar</button>
+            <button type="submit" [disabled]="medicoForm.invalid" class="bg-teal-500 hover:bg-teal-600 text-white px-8 py-2 rounded-full shadow-lg font-bold text-sm transition-all disabled:opacity-50">
+              Guardar Configuración
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+}

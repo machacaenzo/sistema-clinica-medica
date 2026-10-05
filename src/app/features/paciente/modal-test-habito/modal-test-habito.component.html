@@ -1,0 +1,90 @@
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+
+  <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/40 flex flex-col animate-slide-up h-[600px]">
+
+    <!-- 1. HEADER CON BARRA DE PROGRESO -->
+    <div class="shrink-0">
+      <div class="p-6 flex justify-between items-center bg-slate-50/50">
+        <div>
+          <h3 class="font-black text-slate-800 leading-tight">
+            {{ tipo === 'ALCOHOL' ? 'Test de Alcohol' : (tipo === 'TABAQUISMO' ? 'Test de Tabaco' : 'Actividad Física') }}
+          </h3>
+          <p class="text-[10px] text-indigo-500 font-black uppercase tracking-widest">Pregunta {{ indiceActual() + 1 }} de {{ preguntas().length }}</p>
+        </div>
+        <button type="button" (click)="cerrar.emit()" class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-300 hover:text-red-500 transition-all">
+          <fa-icon [icon]="icons.close"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Barra de progreso dinámica -->
+      <div class="w-full h-1.5 bg-slate-100 relative">
+        <div class="absolute left-0 top-0 h-full bg-indigo-500 transition-all duration-500"
+             [style.width.%]="((indiceActual() + 1) / preguntas().length) * 100">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. CUERPO: PREGUNTA Y OPCIONES -->
+    <!-- 2. CUERPO: PREGUNTA Y OPCIONES -->
+    <div class="flex-1 overflow-y-auto p-8 custom-scrollbar bg-gradient-to-b from-white to-slate-50/30">
+
+      <!-- Usamos @if con el índice para forzar el refresco del DOM y la animación -->
+      @if (indiceActual() >= 0) {
+        <div class="animate-fade-in">
+          <!-- Título de la pregunta -->
+          <h4 class="text-lg md:text-xl font-bold text-slate-800 mb-8 leading-snug">
+            {{ preguntas()[indiceActual()]?.t }}
+          </h4>
+
+          <!-- Lista de opciones como botones -->
+          <div class="flex flex-col gap-3">
+            @for (opcion of preguntas()[indiceActual()]?.o; track $index) {
+              <button type="button"
+                      (click)="seleccionar(opcion.v)"
+                      class="w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 group active:scale-95"
+                      [ngClass]="respuestas[indiceActual()] === opcion.v
+                                  ? 'border-indigo-500 bg-indigo-50 shadow-md shadow-indigo-100'
+                                  : 'border-slate-100 bg-white hover:border-indigo-200 hover:bg-slate-50'">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-sm" [ngClass]="respuestas[indiceActual()] === opcion.v ? 'text-indigo-700' : 'text-slate-600'">
+                    {{ opcion.l }}
+                  </span>
+                  @if (respuestas[indiceActual()] === opcion.v) {
+                    <fa-icon [icon]="icons.save" class="text-indigo-500"></fa-icon>
+                  }
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- 3. FOOTER: NAVEGACIÓN -->
+    <div class="p-6 border-t border-slate-100 bg-white shrink-0 flex justify-between items-center">
+
+      <!-- Botón Volver -->
+      <button type="button"
+              (click)="volver()"
+              [disabled]="indiceActual() === 0"
+              class="px-6 py-2 rounded-xl font-bold text-slate-400 hover:text-slate-600 transition-all disabled:opacity-0">
+        <fa-icon [icon]="icons.prev" class="mr-2"></fa-icon> Anterior
+      </button>
+
+      <!-- Indicador de guardado -->
+      @if (procesando()) {
+        <div class="flex items-center gap-2 text-indigo-600">
+           <div class="w-4 h-4 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+           <span class="text-xs font-black uppercase">Analizando...</span>
+        </div>
+      } @else {
+        <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">
+            {{ tipo }} - {{ (indiceActual() + 1 / preguntas().length * 100) | number:'1.0-0' }}%
+        </span>
+      }
+
+    </div>
+
+  </div>
+</div>

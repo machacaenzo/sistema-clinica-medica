@@ -1,0 +1,82 @@
+<div class="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+
+  <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden border border-white/40 flex flex-col animate-slide-up">
+
+    <!-- HEADER -->
+    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+      <div>
+        <h3 class="font-black text-slate-800 leading-tight">Calificar Atención</h3>
+        <p class="text-[10px] text-teal-600 font-bold uppercase tracking-widest">Tu opinión nos ayuda a mejorar</p>
+      </div>
+      <button (click)="cerrar.emit()" class="text-slate-300 hover:text-red-500 transition-all"><fa-icon [icon]="icons.close" class="text-xl"></fa-icon></button>
+    </div>
+
+    <div class="p-8">
+
+      <!-- INFO MÉDICO -->
+      <div class="flex items-center gap-4 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+         <div class="w-12 h-12 rounded-xl bg-teal-600 text-white flex items-center justify-center text-xl shadow-lg shadow-teal-200">
+            <fa-icon [icon]="icons.ok"></fa-icon>
+         </div>
+         <div>
+            <p class="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">Médico Tratante</p>
+            <h4 class="font-bold text-slate-800">{{ turno.medicoData.nombre }}</h4>
+         </div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="enviarResena()" class="space-y-6">
+
+        <!-- ⭐️ SISTEMA DE ESTRELLAS -->
+        <div class="text-center">
+          <p class="text-xs font-bold text-slate-500 uppercase mb-3">¿Cómo fue tu experiencia?</p>
+          <div class="flex justify-center gap-2">
+            @for (star of [1,2,3,4,5]; track star) {
+              <button type="button"
+                      (click)="setRating(star)"
+                      (mouseenter)="puntuacionHover.set(star)"
+                      (mouseleave)="puntuacionHover.set(0)"
+                      class="text-3xl transition-all duration-200 transform hover:scale-125 active:scale-95">
+                <fa-icon [icon]="(puntuacionHover() >= star || puntuacionSeleccionada() >= star) ? icons.starSolid : icons.starRegular"
+                         [ngClass]="(puntuacionHover() >= star || puntuacionSeleccionada() >= star) ? 'text-amber-400' : 'text-slate-200'">
+                </fa-icon>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- 💬 COMENTARIO -->
+        <div>
+          <label class="label-mini mb-2 block">Contanos un poco más (Opcional)</label>
+          <textarea formControlName="comentario" rows="4"
+                    class="input-field resize-none"
+                    placeholder="¿Qué te pareció la puntualidad, el trato...?"></textarea>
+          <div class="flex justify-end mt-1">
+             <span class="text-[9px] font-bold text-slate-400 uppercase">{{ form.get('comentario')?.value?.length || 0 }} / 300</span>
+          </div>
+        </div>
+
+        <!-- 👍 RECOMENDACIÓN -->
+        <div class="flex items-center justify-between p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+           <div class="flex items-center gap-3">
+              <fa-icon [icon]="icons.like" class="text-indigo-500"></fa-icon>
+              <span class="text-xs font-bold text-indigo-900 uppercase">¿Recomendarías la clínica?</span>
+           </div>
+           <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" formControlName="recomienda" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+           </label>
+        </div>
+
+        <!-- BOTÓN ENVIAR -->
+        <button type="submit"
+                [disabled]="procesando()"
+                class="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 disabled:opacity-50">
+          @if (procesando()) { <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div> }
+          @else { Enviar Calificación }
+        </button>
+
+      </form>
+    </div>
+
+  </div>
+</div>

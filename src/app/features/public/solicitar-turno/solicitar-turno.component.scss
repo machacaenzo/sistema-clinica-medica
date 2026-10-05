@@ -1,0 +1,129 @@
+@import '../../../features/admin/_admin-theme.scss';
+
+// Animaciones de entrada
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+// --- TARJETAS DE SELECCIÓN (MÉDICOS) ---
+.medic-card { // Renombrado de .group para evitar conflictos, úsalo en el HTML
+  @apply relative overflow-hidden bg-white border border-slate-200 rounded-3xl p-5 cursor-pointer transition-all duration-300;
+
+  // Sombra suave inicial
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    // CAMBIO: Teal -> Indigo
+    @apply border-indigo-400 transform -translate-y-1;
+    // Sombra Indigo
+    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.15), 0 10px 10px -5px rgba(99, 102, 241, 0.04);
+  }
+
+  // Efecto de borde brillante al hover
+  &::before {
+    content: '';
+    @apply absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-300;
+    // CAMBIO: Teal -> Indigo
+    box-shadow: inset 0 0 0 2px theme('colors.indigo.400');
+  }
+  &:hover::before {
+    @apply opacity-100;
+  }
+}
+
+// --- BOTONES DE DÍAS (Calendario) ---
+button.day-selector {
+  // ✅ AGREGAR ESTA LÍNEA (Dimensiones y no encoger):
+  @apply w-20 h-24 flex-shrink-0;
+
+  // El resto sigue igual:
+  @apply transition-all duration-300 rounded-2xl border-2 flex flex-col items-center justify-center relative overflow-hidden;
+
+  // Estado Normal
+  &.inactive {
+    @apply bg-white border-slate-200 text-slate-500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    &:hover {
+      box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+      transform: translateY(-2px);
+      @apply border-indigo-300 text-indigo-600;
+    }
+  }
+
+  // Estado Seleccionado
+  &.active {
+    @apply bg-indigo-600 text-white border-indigo-600;
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+    transform: scale(1.05);
+  }
+}
+
+// --- CHIPS DE HORARIO ---
+.btn-horario {
+  @apply px-5 py-2.5 rounded-xl text-sm font-bold border transition-all duration-200 bg-white text-slate-600 border-slate-200 shadow-sm;
+
+  &:hover {
+    // CAMBIO: Teal -> Indigo
+    @apply border-indigo-400 text-indigo-600 bg-indigo-50 transform scale-105;
+  }
+
+  &.active {
+    // CAMBIO: Teal -> Indigo
+    @apply bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/30 transform scale-105;
+  }
+}
+
+// --- INPUTS FORMULARIO (Paso 3) ---
+.input-field {
+  @apply w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 outline-none transition-all;
+
+  &:focus {
+    @apply bg-white border-indigo-500 ring-4 ring-indigo-500/10;
+  }
+
+  &::placeholder {
+    @apply font-normal text-slate-400;
+  }
+}
+
+// --- RADIO BUTTON CARDS (Métodos de Pago) ---
+.payment-card {
+  @apply p-3 rounded-2xl border-2 border-slate-200 bg-white transition-all h-full flex flex-col items-center justify-center gap-2 cursor-pointer;
+
+  &:hover {
+    @apply border-indigo-300;
+  }
+
+  // Cuando el radio interno está chequeado (manejado en HTML con peer-checked o clase condicional)
+  &.selected {
+    @apply border-indigo-500 bg-indigo-50;
+  }
+}
+
+// --- SCROLLBAR ---
+.custom-scrollbar {
+  &::-webkit-scrollbar { height: 6px; width: 6px; }
+  &::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full hover:bg-slate-400; }
+  &::-webkit-scrollbar-track { @apply bg-transparent; }
+}
+
+// Ajuste global
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: #f8fafc; // Slate-50
+}

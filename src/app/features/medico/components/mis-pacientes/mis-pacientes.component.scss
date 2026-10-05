@@ -1,0 +1,45 @@
+// Importamos el tema del Admin
+@import '../../../admin/admin-theme';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Tarjetas de Resumen (Glassmorphism)
+.summary-glass {
+  @apply bg-white/30 backdrop-blur-md border border-white/50;
+  @apply rounded-2xl px-5 py-3 shadow-sm;
+  @apply flex flex-col items-center min-w-[110px];
+  @apply transition-transform hover:-translate-y-1;
+}
+
+// Fila de Paciente
+.patient-row {
+  @apply grid grid-cols-12 items-center p-3 rounded-xl transition-all cursor-default;
+  @apply border-b border-teal-500/10;
+
+  // Hover Effect
+  &:hover {
+    @apply bg-white/40 shadow-sm border-transparent;
+
+    // ✅ CORRECCIÓN AQUÍ: Usamos CSS estándar (paréntesis, no corchetes)
+    transform: scale(1.01);
+  }
+}
+
+// Animaciones extra
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.patient-row {
+  animation: slideIn 0.3s ease-out backwards;
+
+  @for $i from 1 through 5 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.05}s;
+    }
+  }
+}

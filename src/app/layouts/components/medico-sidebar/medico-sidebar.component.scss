@@ -1,0 +1,8 @@
+@import '../sidebar-theme';
+
+// Opcional: Personalizar el color activo para médicos (ej: Azul)
+.nav-link.active-medico {
+  @apply bg-gradient-to-r from-blue-400 to-indigo-500;
+  @apply shadow-indigo-500/30;
+  @apply text-white font-bold;
+}

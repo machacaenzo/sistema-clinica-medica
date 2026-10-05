@@ -1,0 +1,32 @@
+:host {
+  display: block;
+}
+
+// 1. OCULTAR FLECHAS (SPIN BUTTONS)
+// Esto funciona en Chrome, Safari, Edge y Opera
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+// Esto funciona en Firefox
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+// 2. AJUSTE DE ESPACIO INTERNO
+// Forzamos un padding a la derecha para que el número no toque la unidad "mg/dL"
+.input-field {
+  padding-right: 3.5rem !important; // Deja espacio para el texto "mg/dL"
+  text-align: right; // Opcional: Los números suelen leerse mejor alineados a la derecha
+}
+
+// Estilo específico para este modal (para asegurar que se vea bien)
+.relative {
+  span {
+    pointer-events: none; // Para que el click pase a través del texto mg/dL
+    font-weight: 700;
+    opacity: 0.6;
+  }
+}

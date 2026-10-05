@@ -1,0 +1,208 @@
+/* ==========================================================================
+   ADMIN THEME - ESTILOS COMPARTIDOS
+   Ubicación: src/app/features/admin/_admin-theme.scss
+   ========================================================================== */
+
+// 1. CONTENEDORES PRINCIPALES (Efecto Glass)
+// --------------------------------------------------------------------------
+
+// Marco principal para las tablas de gestión
+.content-card {
+  @apply w-full h-full flex flex-col;
+  @apply bg-white/5 backdrop-blur-sm; // Fondo casi invisible
+  @apply border border-white/20 rounded-[2.5rem];
+  @apply shadow-2xl;
+  @apply p-6;
+}
+
+// Panel sólido para configuraciones (más opaco para leer formularios largos)
+.glass-panel {
+  @apply w-full h-full flex flex-col;
+  @apply bg-white/40 backdrop-blur-xl;
+  @apply border border-white/50 rounded-[2.5rem];
+  @apply shadow-2xl overflow-hidden relative;
+}
+
+// 2. HERRAMIENTAS Y FILTROS (Toolbar)
+// --------------------------------------------------------------------------
+
+.filters-area {
+  @apply flex flex-col md:flex-row justify-between items-center gap-6 mb-6;
+}
+
+.search-glass {
+  @apply bg-white/30 border-none text-slate-800 placeholder-slate-500;
+  @apply rounded-2xl py-2.5 pr-4;
+  padding-left: 2.8rem !important; // Espacio para la lupa
+  @apply focus:bg-white/50 focus:ring-2 focus:ring-cyan-400/50 transition-all;
+  width: 100%;
+}
+
+.select-glass {
+  @apply bg-transparent font-bold text-slate-600 border-none cursor-pointer;
+  @apply focus:ring-0 py-2;
+  padding-right: 1.5rem;
+  padding-left: 0.5rem;
+  background-image: none; // Quita flecha nativa
+}
+
+// 3. TABLAS (Glass Table)
+// --------------------------------------------------------------------------
+
+.table-section {
+  @apply flex-1 overflow-hidden rounded-3xl;
+  @apply bg-white/30 backdrop-blur-xl;
+  @apply border border-white/50;
+  @apply shadow-inner;
+}
+
+.glass-table {
+  @apply w-full border-collapse;
+
+  thead {
+    @apply bg-white/20 border-b border-teal-500/40;
+
+    th {
+      @apply text-xs font-bold uppercase tracking-wider text-slate-700 py-5 px-6 text-left;
+    }
+  }
+
+  tbody {
+    tr {
+      @apply transition-all duration-200;
+      @apply border-b border-teal-500/30;
+
+      &:hover {
+        @apply bg-white/40;
+      }
+
+      &:last-child { @apply border-none; }
+    }
+
+    td {
+      @apply py-4 px-6 text-sm font-medium text-slate-800 align-middle;
+    }
+  }
+}
+
+// 4. ELEMENTOS VISUALES (Badges)
+// --------------------------------------------------------------------------
+
+.role-badge {
+  @apply font-bold capitalize text-slate-700 bg-white/30 px-3 py-1 rounded-lg border border-white/40;
+}
+
+.status-badge {
+  @apply px-3 py-1 rounded-full text-xs font-bold shadow-sm inline-block uppercase tracking-wider border;
+
+  // Estados Generales
+  &.activo { @apply bg-teal-100 text-teal-700 border-teal-200; }
+  &.inactivo { @apply bg-slate-100 text-slate-500 border-slate-200; }
+
+  // Alertas
+  &.warning { @apply bg-amber-100 text-amber-700 border-amber-200; }
+  &.danger { @apply bg-red-100 text-red-700 border-red-200; }
+
+  // Categorías (Insumos)
+  &.category { @apply bg-indigo-50 text-indigo-600 border-indigo-100 normal-case; }
+}
+
+// 5. BOTONES DE ACCIÓN (.icon-btn)
+// --------------------------------------------------------------------------
+
+.icon-btn {
+  // Base: Círculo perfecto de 36px
+  @apply w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-sm border border-transparent;
+  @apply flex-shrink-0 cursor-pointer;
+
+  // --- Variantes de Color ---
+
+  // Editar (Cyan)
+  &.edit {
+    @apply bg-white text-cyan-600 hover:bg-cyan-500 hover:text-white;
+  }
+
+  // Toggle/Borrar (Gris -> Rojo)
+  &.toggle {
+    @apply bg-white text-slate-400 hover:bg-slate-200 hover:text-slate-600;
+  }
+
+  // Turnos (Azul)
+  &.turns {
+    @apply bg-white text-blue-500 hover:bg-blue-500 hover:text-white shadow-blue-500/20;
+  }
+
+  // Historia Clínica (Morado)
+  &.history {
+    @apply bg-white text-purple-500 hover:bg-purple-500 hover:text-white shadow-purple-500/20;
+  }
+
+  // Tareas (Ámbar/Naranja)
+  &.task {
+    @apply bg-white text-amber-500 hover:bg-amber-500 hover:text-white shadow-amber-500/20;
+  }
+
+  // Gestión Stock (Índigo)
+  &.stock {
+    @apply bg-white text-indigo-500 hover:bg-indigo-500 hover:text-white shadow-indigo-500/20;
+  }
+}
+
+// 6. FORMULARIOS (Estilos para Modales)
+// --------------------------------------------------------------------------
+
+// Input Sólido (Alto contraste para modales blancos)
+.input-field {
+  @apply w-full;
+  @apply bg-slate-50; // Fondo gris claro
+  @apply border border-slate-300; // Borde visible
+  @apply rounded-lg px-3 py-2 text-sm text-slate-800 font-medium;
+  @apply placeholder-slate-400 transition-all;
+
+  &:focus {
+    @apply bg-white border-teal-500 ring-2 ring-teal-500/20 outline-none;
+  }
+
+  &:disabled {
+    @apply opacity-60 cursor-not-allowed bg-slate-100;
+  }
+
+  // Estado de error
+  &.ng-invalid.ng-touched {
+    @apply border-red-400 bg-red-50 focus:ring-red-200;
+  }
+}
+
+// Mensaje de error debajo del input
+.error-msg {
+  @apply text-[10px] text-red-500 font-bold mt-1 ml-1 flex items-center gap-1;
+}
+
+// Botón Principal de Guardado
+.btn-primary {
+  @apply bg-teal-500 text-white px-6 py-2 rounded-full shadow-lg font-bold text-sm transition-all;
+
+  &:hover { @apply bg-teal-600 transform -translate-y-0.5; }
+
+  &:disabled {
+    @apply bg-slate-300 text-slate-500 cursor-not-allowed shadow-none transform-none opacity-70;
+  }
+}
+
+// 7. UTILIDADES GLOBALES
+// --------------------------------------------------------------------------
+
+// Scrollbar personalizado fino
+.custom-scrollbar {
+  &::-webkit-scrollbar { width: 6px; height: 6px; }
+  &::-webkit-scrollbar-thumb { @apply bg-white/40 rounded-full hover:bg-white/60; }
+  &::-webkit-scrollbar-track { @apply bg-transparent; }
+}
+
+// Reset de Selects (Quita la flecha nativa fea)
+select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
+}

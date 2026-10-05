@@ -1,0 +1,172 @@
+<aside class="w-full h-full">
+  <div class="sidebar-glass flex flex-col h-full">
+
+    <!-- 1. HEADER ADMIN (DINÁMICO) -->
+    <div class="pt-8 pb-6 px-6 text-center border-b border-white/10 flex flex-col items-center gap-3">
+
+      <!-- LOGO DE LA CLÍNICA (Si existe en configuración) -->
+      @if (clinicaService.clinicaData()?.logo) {
+      <img [src]="clinicaService.clinicaData()?.logo" alt="Logo Clínica"
+        class="w-16 h-16 object-contain drop-shadow-lg">
+      } @else {
+      <!-- Fallback: Icono genérico si no hay logo cargado -->
+      <div class="w-12 h-12 bg-teal-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+        <fa-icon [icon]="icons.dashboard" class="text-xl"></fa-icon>
+      </div>
+      }
+
+      <!-- NOMBRE DE LA CLÍNICA -->
+      <h1 class="text-xl font-black text-slate-800 tracking-tight leading-none drop-shadow-sm">
+        {{ clinicaService.clinicaData()?.nombre || 'Panel Admin' }}
+      </h1>
+    </div>
+
+    <!-- 2. PERFIL -->
+    @if (authService.currentUser(); as user) {
+    <div class="profile-section">
+      <img [src]="user.fotoURL || defaultImage" (error)="handleImageError($event)"
+        class="w-16 h-16 rounded-full object-cover border-4 border-white/30 bg-white shadow-md">
+
+      <h3 class="text-slate-800 font-bold mt-2 text-lg drop-shadow-sm">{{ user.displayName }}</h3>
+      <span
+        class="role-badge bg-teal-100/90 text-teal-800 border border-teal-200 shadow-sm backdrop-blur-sm">Administrador</span>
+    </div>
+    }
+
+    <!-- 3. MENÚ DE NAVEGACIÓN -->
+    <nav class="flex-1 overflow-y-auto py-4 px-2 custom-scrollbar">
+      <ul class="space-y-1">
+
+        <li>
+          <a routerLink="/admin/dashboard" class="nav-link" routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact: true}">
+            <fa-icon [icon]="icons.dashboard"></fa-icon> <span>Dashboard</span>
+          </a>
+        </li>
+
+
+
+        <!-- SECCIÓN GESTIÓN (TÍTULO DE ALTO CONTRASTE) -->
+        <!-- text-teal-900 (Casi negro) + font-black (Muy grueso) + drop-shadow-sm (Sombra blanca) -->
+        <li
+          class="px-6 pt-5 pb-2 text-[11px] font-black text-teal-900 uppercase tracking-widest drop-shadow-md border-b border-teal-900/10 mx-4 mb-2">
+          Gestión Interna
+        </li>
+
+        <li>
+          <a routerLink="/admin/mensajes" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.mensajes"></fa-icon>
+            <span>Mensajes Web</span>
+            <!-- Opcional: Badge de "Nuevo" si quisieras hacerlo a futuro -->
+          </a>
+        </li>
+        <li>
+          <a routerLink="/admin/usuarios" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.usuarios"></fa-icon> <span>Usuarios</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/admin/empleados" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.empleados"></fa-icon> <span>Empleados</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/admin/medicos" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.medicos"></fa-icon> <span>Médicos</span>
+          </a>
+        </li>
+        <li>
+  <a routerLink="/admin/seguridad-farmaco" class="nav-link" routerLinkActive="active">
+    <fa-icon [icon]="icons.seguridad"></fa-icon>
+    <span>Guardián de Drogas</span>
+  </a>
+</li>
+
+        <!-- SECCIÓN CLÍNICA (TÍTULO DE ALTO CONTRASTE) -->
+        <li
+          class="px-6 pt-5 pb-2 text-[11px] font-black text-teal-900 uppercase tracking-widest drop-shadow-md border-b border-teal-900/10 mx-4 mb-2">
+          Área Clínica
+        </li>
+
+        <li>
+          <a routerLink="/admin/prestaciones" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.prestaciones"></fa-icon>
+            <span>Catálogo de Servicios</span>
+          </a>
+        </li>
+        <li>
+  <a routerLink="/admin/servicios-diagnostico" class="nav-link" routerLinkActive="active">
+    <fa-icon [icon]="icons.insumos"></fa-icon> <!-- Puedes usar faVial si lo agregaste al TS -->
+    <span>Estudios y Pruebas</span>
+  </a>
+</li>
+
+        <li>
+          <a routerLink="/admin/pacientes" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.pacientes"></fa-icon> <span>Pacientes</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/admin/turnos" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.turnos"></fa-icon> <!-- Asegúrate de tener faCalendarAlt en el TS -->
+            <span>Gestión de Turnos</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/admin/obras-sociales" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.config"></fa-icon> <!-- Usa faBuilding si lo tienes -->
+            <span>Obras Sociales</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/admin/insumos" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.insumos"></fa-icon> <span>Farmacia / Stock</span>
+          </a>
+        </li>
+        <li>
+
+          <a routerLink="/admin/config" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.config"></fa-icon> <span>Configuración</span>
+          </a>
+        </li>
+
+
+        <li>
+          <a routerLink="/admin/reportes-clinicos" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.reportes"></fa-icon> <!-- Necesitas agregar faChartPie en el TS -->
+            <span>Reportes de Salud</span>
+          </a>
+        </li>
+
+        <li>
+  <a routerLink="/admin/contingencias" class="nav-link" routerLinkActive="active">
+    <fa-icon [icon]="icons.contingencia" class="text-rose-500"></fa-icon>
+    <span>Gestión de Crisis</span>
+  </a>
+</li>
+        <li>
+          <a routerLink="/admin/validar-credencial" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.shield"></fa-icon> <span>Exportar Historia Clínica</span>
+          </a>
+        </li>
+
+        <li>
+          <a routerLink="/admin/logs-seguridad" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.shield"></fa-icon> <span>Logs de Seguridad</span>
+          </a>
+        </li>
+
+
+
+      </ul>
+    </nav>
+
+    <!-- 4. LOGOUT -->
+    <div class="p-6 mt-auto border-t border-white/20 bg-white/10 backdrop-blur-md">
+      <button (click)="authService.logout()"
+        class="logout-btn bg-white/50 hover:bg-red-500 hover:text-white text-slate-700 shadow-sm">
+        <fa-icon [icon]="icons.logout"></fa-icon> <span>Salir</span>
+      </button>
+    </div>
+  </div>
+</aside>

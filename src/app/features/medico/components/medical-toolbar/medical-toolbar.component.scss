@@ -1,0 +1,37 @@
+// Contenedor Principal (Vidrio)
+.toolbar-glass {
+  @apply flex flex-col gap-3 p-3 rounded-2xl border border-white/60 shadow-lg backdrop-blur-md;
+  background: rgba(255, 255, 255, 0.6); // Blanco semitransparente
+  width: fit-content;
+}
+
+// Texto Vertical
+.toolbar-label {
+  @apply text-[9px] text-center font-black text-slate-400 uppercase tracking-widest mb-1 select-none;
+  writing-mode: vertical-lr; // Texto vertical
+  transform: rotate(180deg); // Orientación correcta
+  align-self: center;
+}
+
+// Botón Genérico
+.tool-btn {
+  @apply transition-all duration-200 outline-none;
+
+  &:hover {
+    @apply transform -translate-y-1;
+  }
+
+  &:active {
+    @apply transform scale-95;
+  }
+}
+
+// Envoltorio del Icono (Cuadrado redondeado)
+.icon-wrapper {
+  @apply w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm border border-transparent transition-colors;
+
+  // Borde sutil al hacer hover en el botón padre
+  .group:hover & {
+    @apply border-white/50 shadow-md;
+  }
+}

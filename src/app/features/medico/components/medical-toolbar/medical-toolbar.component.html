@@ -1,0 +1,41 @@
+<div class="toolbar-glass">
+
+  <!-- Etiqueta Vertical -->
+  <p class="toolbar-label">HERRAMIENTAS</p>
+
+  <!-- 1. Laboratorio -->
+  <button (click)="openLab.emit()" class="tool-btn group" title="Cargar Datos de Laboratorio">
+    <div class="icon-wrapper text-blue-500 group-hover:text-blue-600 bg-blue-50 group-hover:bg-blue-100">
+      <fa-icon [icon]="icons.lab"></fa-icon>
+    </div>
+  </button>
+
+  <!-- 2. Mapa Corporal -->
+  <button (click)="openBodyMap.emit()" class="tool-btn group" title="Abrir Mapa Corporal">
+    <div class="icon-wrapper text-teal-500 group-hover:text-teal-600 bg-teal-50 group-hover:bg-teal-100">
+      <fa-icon [icon]="icons.body"></fa-icon>
+    </div>
+  </button>
+
+  <!-- 3. Calculadora Riesgo CV -->
+  <button (click)="openRiskCalc.emit()" class="tool-btn group" title="Calculadora de Riesgo CV">
+    <div class="icon-wrapper text-rose-500 group-hover:text-rose-600 bg-rose-50 group-hover:bg-rose-100">
+      <fa-icon [icon]="icons.calc"></fa-icon>
+    </div>
+  </button>
+
+  <!-- 4. Calculadora Renal -->
+  <button (click)="openRenalCalc.emit()" class="tool-btn group" title="Calculadora Renal">
+    <div class="icon-wrapper text-sky-600 group-hover:text-sky-700 bg-sky-50 group-hover:bg-sky-100">
+      <fa-icon [icon]="icons.rinon"></fa-icon>
+    </div>
+  </button>
+
+  <!-- 5. ✅ Farmacia / Insumos -->
+  <button (click)="openPharmacy.emit()" class="tool-btn group" title="Venta de Insumos / Farmacia">
+    <div class="icon-wrapper text-purple-600 group-hover:text-purple-700 bg-purple-50 group-hover:bg-purple-100">
+      <fa-icon [icon]="icons.pharma"></fa-icon>
+    </div>
+  </button>
+
+</div>

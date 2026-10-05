@@ -1,0 +1,36 @@
+// Importamos el tema global del Admin
+@import '../../../admin/_admin-theme.scss';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Estilo de la Fila (Grid de 12 columnas)
+.patient-row {
+  @apply grid grid-cols-12 items-center p-3 rounded-xl transition-all cursor-default;
+  @apply border-b border-teal-500/10; // Línea separadora sutil
+
+  // Efecto Hover Glass
+  &:hover {
+    @apply bg-white/40 shadow-sm border-transparent;
+    transform: scale(1.005); // Pequeño "pop" al pasar el mouse
+  }
+}
+
+// Animación de entrada escalonada
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.patient-row {
+  animation: slideIn 0.3s ease-out backwards;
+
+  // Staggering para las primeras 10 filas
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.03}s;
+    }
+  }
+}

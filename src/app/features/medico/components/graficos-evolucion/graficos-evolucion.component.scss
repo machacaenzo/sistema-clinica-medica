@@ -1,0 +1,17 @@
+// Tabs de arriba (PA, Peso, Glu)
+.btn-chart-tab {
+  @apply px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all text-slate-400 hover:text-slate-600;
+  &.active { @apply bg-white text-indigo-600 shadow-md; }
+}
+
+// Tabs oscuros (Correlaciones)
+.btn-chart-tab-dark {
+  @apply px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all text-slate-400 hover:text-slate-600;
+  &.active { @apply bg-slate-800 text-white shadow-md; }
+}
+
+// Botoncitos de tiempo (6M, 1A, Total)
+.btn-range {
+  @apply px-2 py-0.5 rounded text-[8px] font-black text-slate-400 border border-transparent transition-all;
+  &.active { @apply bg-white border-slate-200 text-slate-700 shadow-sm; }
+}

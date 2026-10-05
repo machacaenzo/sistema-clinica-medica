@@ -1,0 +1,89 @@
+<div class="min-h-screen bg-slate-50 p-4 md:p-8 pb-20">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- HEADER -->
+    <div class="mb-8 animate-fade-in">
+      <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
+        <fa-icon [icon]="icons.presion" class="text-rose-500"></fa-icon> Autocontrol de Salud
+      </h2>
+      <p class="text-slate-500 font-medium text-sm mt-1">
+        Seguimiento digital prescrito por tu médico de cabecera.
+      </p>
+    </div>
+
+    @if (modulosDisponibles().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 animate-slide-up">
+
+        <!-- COLUMNA 1: FORMULARIO -->
+        <div class="md:col-span-1">
+          <div class="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-200">
+            <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Nuevo Registro</h3>
+
+            <form [formGroup]="form" (ngSubmit)="guardar()" class="flex flex-col gap-5">
+
+              <!-- Selector Dinámico -->
+              <div>
+                <label class="label-mini block mb-1 ml-1">Seleccionar Control</label>
+                <select formControlName="tipo" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-teal-400">
+                  <option value="" disabled selected>Elegir módulo...</option>
+                  @for (m of modulosDisponibles(); track m.id) {
+                    <option [value]="m.id">{{ m.label }}</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Inputs de Valor (Se mantienen igual pero reactivos al tipo seleccionado) -->
+              <div class="grid grid-cols-2 gap-3">
+                <div [class.col-span-2]="form.get('tipo')?.value !== 'PRESION'">
+                  <label class="label-mini block mb-1 ml-1">
+                    {{ form.get('tipo')?.value === 'PRESION' ? 'Sistólica (Alta)' : 'Valor' }}
+                  </label>
+                  <input type="number" formControlName="valor1" class="w-full bg-white border-2 border-slate-100 rounded-xl px-4 py-2 text-xl font-black text-slate-800 text-center focus:border-teal-400 outline-none">
+                </div>
+
+                @if (form.get('tipo')?.value === 'PRESION') {
+                  <div>
+                    <label class="label-mini block mb-1 ml-1">Diastólica (Baja)</label>
+                    <input type="number" formControlName="valor2" class="w-full bg-white border-2 border-slate-100 rounded-xl px-4 py-2 text-xl font-black text-slate-800 text-center focus:border-teal-400 outline-none">
+                  </div>
+                }
+              </div>
+
+              <div>
+                <label class="label-mini block mb-1 ml-1">Notas</label>
+                <textarea formControlName="notas" rows="2" class="input-field resize-none" placeholder="Opcional..."></textarea>
+              </div>
+
+              <button type="submit" [disabled]="form.invalid || guardando()" class="bg-slate-900 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg active:scale-95 disabled:opacity-50">
+                {{ guardando() ? 'Guardando...' : 'Registrar' }}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- COLUMNA 2: HISTORIAL (Igual que antes) -->
+        <div class="md:col-span-2">
+           <!-- ... tu código de historial actual se mantiene igual ... -->
+        </div>
+
+      </div>
+    } @else {
+      <!-- 🔒 ESTADO DE BLOQUEO: Si el médico no activó nada -->
+      <div class="bg-white rounded-[3rem] p-12 shadow-xl border border-slate-200 text-center max-w-2xl mx-auto animate-fade-in">
+        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mx-auto mb-6">
+           <fa-icon [icon]="icons.lock" class="text-4xl"></fa-icon>
+        </div>
+        <h3 class="text-xl font-bold text-slate-700 mb-2">Planes de Seguimiento Inactivos</h3>
+        <p class="text-slate-500 text-sm leading-relaxed px-10">
+          Tu médico de cabecera aún no ha habilitado módulos de monitoreo remoto para tu perfil.
+          Consulta con el profesional en tu próxima visita para activar este servicio.
+        </p>
+        <button routerLink="/public/home"
+          class="mt-8 text-indigo-600 font-black text-xs uppercase tracking-widest hover:underline cursor-pointer">
+    Volver al Inicio
+  </button>
+      </div>
+    }
+
+  </div>
+</div>

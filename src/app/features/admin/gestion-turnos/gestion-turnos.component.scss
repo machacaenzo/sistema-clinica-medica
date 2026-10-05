@@ -1,0 +1,81 @@
+@import '../_admin-theme';
+
+/************
+ ICONOS DE INPUT
+*************/
+.input-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: rgb(107 114 128); // slate-500
+  pointer-events: none;
+  z-index: 0;
+}
+
+/************
+ INPUTs GENERALES
+*************/
+.select-glass {
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+}
+
+/************
+ INPUT DATE
+*************/
+.input-date {
+  padding-left: 2.6rem;
+  padding-right: 0.6rem;
+  min-width: 150px;
+  color: rgb(51 65 85); // slate-700
+}
+
+/* oculta el ícono nativo del date */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
+input[type="date"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/************
+ SELECT MÉDICO
+*************/
+.input-select {
+  padding-left: 2.6rem;
+  padding-right: 1.7rem;
+  min-width: 200px;
+  color: rgb(71 85 105); // slate-600
+  appearance: none;
+}
+
+/* flecha */
+.input-arrow {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9px;
+  color: rgb(107 114 128);
+  pointer-events: none;
+  z-index: 0;
+}
+.revisar-parpadeo {
+  animation: alertaPago 0.9s infinite;
+}
+
+@keyframes alertaPago {
+  0%   { box-shadow: 0 0 6px rgba(0,122,255,0.0); transform: scale(1); }
+  50%  { box-shadow: 0 0 12px rgba(0,122,255,0.9); transform: scale(1.08); }
+  100% { box-shadow: 0 0 6px rgba(0,122,255,0.0); transform: scale(1); }
+}

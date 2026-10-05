@@ -1,0 +1,57 @@
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-200">
+
+    <!-- Header -->
+    <div class="bg-slate-50 px-5 py-4 border-b border-slate-100 flex justify-between items-center">
+      <h3 class="font-black text-slate-800 flex items-center gap-2">
+        <fa-icon [icon]="icons.heart" class="text-rose-500"></fa-icon> Calculadora CV
+      </h3>
+      <button (click)="cerrar.emit()" class="text-slate-400 hover:text-slate-600"><fa-icon [icon]="icons.close"></fa-icon></button>
+    </div>
+
+    <div class="p-6">
+
+      <!-- Datos que ya sabemos (Solo lectura) -->
+      <div class="text-xs text-slate-500 mb-4 flex flex-wrap gap-2">
+        <span class="bg-slate-100 px-2 py-1 rounded">Edad: {{ datosBase.edad }}</span>
+        <span class="bg-slate-100 px-2 py-1 rounded">PA: {{ datosBase.presionSistolica }}</span>
+        <span class="bg-slate-100 px-2 py-1 rounded">{{ datosBase.fuma ? 'Fumador' : 'No Fuma' }}</span>
+        <span class="bg-slate-100 px-2 py-1 rounded">{{ datosBase.diabetes ? 'Diabético' : 'No Diabético' }}</span>
+      </div>
+
+      <!-- Input Colesterol (El único dato que pide) -->
+      <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Colesterol Total (mg/dL)</label>
+      <div class="flex gap-2 mb-4">
+        <input type="number"
+               [ngModel]="colesterol()"
+               (ngModelChange)="colesterol.set($event)"
+               (keydown.enter)="calcular()"
+               class="w-full border-2 border-slate-200 rounded-xl px-4 py-2 font-bold text-slate-800 text-lg outline-none focus:border-rose-400 focus:ring-4 focus:ring-rose-100 transition-all text-center placeholder-slate-300"
+               placeholder="Ej: 200" autofocus>
+
+        <button (click)="calcular()" [disabled]="!colesterol()" class="bg-slate-800 text-white px-4 rounded-xl font-bold text-xs hover:bg-black disabled:opacity-50 transition-all">
+          Calcular
+        </button>
+      </div>
+
+      <!-- Resultado -->
+      @if (resultado()) {
+        <div class="animate-slide-up bg-slate-50 rounded-xl p-4 border border-slate-100 text-center">
+          <p class="text-xs text-slate-500 font-bold uppercase mb-1">Riesgo a 10 años</p>
+
+          <div class="inline-block px-3 py-1 rounded-lg text-xs font-black mb-2" [ngClass]="resultado()?.color">
+            {{ resultado()?.nivel }} ({{ resultado()?.riesgoPorcentaje }})
+          </div>
+
+          <p class="text-xs text-slate-600 italic leading-tight">{{ resultado()?.recomendacion }}</p>
+
+          <button (click)="confirmar()" class="w-full mt-4 bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-teal-500/20 active:scale-95">
+            <fa-icon [icon]="icons.check"></fa-icon> Insertar en Historia
+          </button>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

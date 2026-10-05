@@ -1,0 +1,21 @@
+// Importamos el tema global del Admin
+@import '../../../admin/_admin-theme.scss';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Ajustes Responsive
+@media (max-width: 768px) {
+  .grid-cols-12 {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; // Permitir scroll vertical en móvil
+  }
+
+  aside, main {
+    min-height: 400px; // Altura mínima para que no colapsen
+    width: 100%;
+  }
+}

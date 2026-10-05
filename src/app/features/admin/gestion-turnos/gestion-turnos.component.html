@@ -1,0 +1,297 @@
+<div class="w-full h-full p-4 flex flex-col">
+  <div class="content-card animate-fade-in">
+
+    <!-- TOOLBAR DE FILTROS (Igual que antes) -->
+    <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+      <div class="w-full md:w-auto">
+        <h2 class="text-2xl font-bold text-slate-800 drop-shadow-sm">Recepción</h2>
+        <p class="text-slate-600 font-medium text-sm">Control de turnos y caja</p>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-3 w-full xl:w-auto items-center">
+        <!-- Buscador -->
+        <div class="relative w-full md:w-64">
+          <fa-icon [icon]="icons.faSearch" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 z-10"></fa-icon>
+          <input type="text" placeholder="Buscar paciente..." [ngModel]="filtroTexto()" (input)="onTextoChange($event)" class="search-glass pl-10">
+        </div>
+
+        <!-- Filtros -->
+        <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-start bg-white/20 p-1.5 rounded-2xl backdrop-blur-md border border-white/30">
+          <div class="relative flex items-center">
+            <input type="date" [ngModel]="filtroFecha()" (input)="onFechaChange($event)" class="select-glass input-date">
+          </div>
+          <div class="h-6 w-px bg-slate-400/50 mx-1"></div>
+          <div class="relative flex items-center">
+            <fa-icon [icon]="icons.faUserMd" class="input-icon"></fa-icon>
+            <select [ngModel]="filtroMedico()" (change)="onMedicoChange($event)" class="select-glass input-select">
+                <option value="">Todos los Médicos</option>
+                @for (m of medicosSignal(); track m.uid) { <option [value]="m.uid">{{ m.displayName }}</option> }
+            </select>
+            <div class="input-arrow">▼</div>
+          </div>
+          <div class="relative flex items-center">
+            <select [ngModel]="filtroEstado()" (change)="onEstadoChange($event)" class="select-glass input-select">
+              <option value="">Todos los Estados</option>
+              <option value="Pendiente de Pago">Pendiente de Pago</option>
+              <option value="Confirmado">Confirmado</option>
+              <option value="En Sala">En Sala</option>
+              <option value="En Atencion">En Atención</option>
+              <option value="Finalizado">Finalizado</option>
+              <option value="Cancelado">Cancelado</option>
+              <option value="Rechazado">Rechazado</option>
+              <option value="Vencido">Vencido</option>
+            </select>
+            <div class="input-arrow">▼</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA Y LISTA -->
+    <div class="table-section overflow-hidden relative custom-scrollbar">
+      <div class="absolute inset-0 overflow-auto p-4">
+
+        <!-- VISTA DESKTOP -->
+        <div class="hidden md:block">
+          <table class="glass-table w-full table-fixed">
+            <thead class="sticky top-0 z-10">
+              <tr>
+                <!-- ✅ NUEVA COLUMNA FECHA -->
+                <th class="text-center py-5 w-[110px]">Fecha</th>
+                <th class="text-center py-5 w-[80px]">Hora</th>
+
+                <th class="pl-4 text-left py-5 w-auto">Paciente</th>
+                <th class="text-left py-5 w-[20%]">Médico</th>
+                <th class="text-center py-5 w-[150px]">Estado</th>
+                <th class="text-center py-5 w-[120px]">Pago</th>
+                <th class="text-right pr-6 py-5 w-[140px]">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (t of turnosFiltrados(); track t.id) {
+                <tr class="transition-all duration-200 border-b hover:bg-white/40"
+                    [ngClass]="{
+                      'bg-orange-50/80': t.estado === 'Pendiente de Pago' && !esTurnoVencido(t),
+                      'bg-red-50/80': esTurnoVencido(t),
+                      'bg-teal-50/80': t.estado === 'En Sala',
+                      'opacity-50 grayscale': t.estado === 'Cancelado' || t.estado === 'Rechazado' || t.estado ==='Vencido'
+                    }">
+
+                  <!-- FECHA -->
+                  <td class="text-center py-4 align-middle text-slate-600 font-medium text-sm">
+                    {{ t.fecha.toDate() | date:'dd/MM/yyyy' }}
+                  </td>
+
+                  <!-- HORA -->
+                  <td class="text-center py-4 align-middle font-mono font-bold text-slate-700 text-lg">
+                    {{ t.hora }}
+                  </td>
+
+                  <!-- Paciente -->
+                  <td class="pl-4 py-4 align-middle truncate">
+                    <div class="flex flex-col">
+                      <span class="font-bold text-slate-800 truncate">{{ t.pacienteData.nombre }}</span>
+                      <div class="flex items-center gap-2 text-xs text-slate-500">
+                        <span class="font-mono">{{ t.pacienteData.dni }}</span>
+                        <span class="text-teal-600 font-bold">• {{ t.pacienteData.obraSocial }}</span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Médico -->
+                  <td class="py-4 align-middle text-left truncate">
+                    <span class="text-sm text-slate-700 font-medium block">{{ t.medicoData.nombre }}</span>
+                    <span class="text-[10px] text-slate-400 uppercase">{{ t.medicoData.especialidad }}</span>
+                  </td>
+
+                  <!-- Estado -->
+                  <td class="text-center py-4 align-middle">
+                    @if (esTurnoVencido(t)) {
+                       <span class="status-badge bg-red-600 text-white border-red-700">VENCIDO</span>
+                    } @else {
+                       <span class="status-badge" [ngClass]="{
+                          'warning': t.estado === 'Pendiente de Pago',
+                          'activo': t.estado === 'Confirmado',
+                          'bg-blue-100 text-blue-700 border-blue-200': t.estado === 'En Sala',
+                          'inactivo': t.estado === 'Cancelado' || t.estado === 'Finalizado' || t.estado === 'Rechazado'
+                        }">{{ t.estado }}</span>
+                    }
+                  </td>
+
+                  <!-- Pago -->
+                  <td class="text-center py-4 align-middle">
+                    <div class="flex flex-col items-center justify-center">
+                      @if (t.montoAbonar > 0) {
+                        <span class="font-bold text-slate-700">${{ t.montoAbonar }}</span>
+                        <div class="flex items-center gap-1 text-[10px] text-slate-500 uppercase font-bold">
+                           {{ t.metodoPago }}
+                        </div>
+                      } @else {
+                        <span class="text-xs text-teal-600 font-bold bg-teal-50 px-2 py-1 rounded">Bonificado</span>
+                      }
+                    </div>
+                  </td>
+
+                  <!-- Acciones -->
+                  <td class="text-right pr-6 py-4 align-middle">
+                    <div class="flex justify-end gap-2">
+
+                      <!-- A. REVISAR COMPROBANTE (Lógica Mejorada) -->
+                      <!-- Se muestra si es Transferencia, tiene foto, y el estado es Pendiente O Cancelado -->
+                      @if (t.metodoPago === 'Transferencia' && t.comprobanteBase64 && (t.estado === 'Pendiente de Pago' || t.estado === 'Cancelado')) {
+                        <button (click)="revisarComprobante(t)"
+                                class="icon-btn bg-white text-blue-500 hover:bg-blue-500 hover:text-white shadow-blue-500/30 border border-blue-200"
+                                [class.revisar-parpadeo]="t.estado === 'Pendiente de Pago'"
+                                title="Validar Comprobante">
+                            <fa-icon [icon]="icons.clip"></fa-icon>
+                        </button>
+                      }
+
+                      <!-- B. COBRAR -->
+                      @if (t.estado === 'Pendiente de Pago' && t.metodoPago === 'Efectivo' && !esTurnoVencido(t)) {
+                        <button (click)="confirmarPago(t)" class="icon-btn bg-white text-green-600 hover:bg-green-500 hover:text-white border border-green-200" title="Registrar Pago">
+                          <fa-icon [icon]="icons.cobrar"></fa-icon>
+                        </button>
+                      }
+
+                      <!-- C. DAR PRESENTE -->
+                      @if (t.estado === 'Confirmado') {
+                        <button (click)="darPresente(t)" class="icon-btn bg-white text-teal-600 hover:bg-teal-500 hover:text-white border border-teal-200" title="Paciente en Sala">
+                          <fa-icon [icon]="icons.recepcion"></fa-icon>
+                        </button>
+                      }
+
+                      <!-- D. REPROGRAMAR (Solo Confirmados) -->
+                      <!-- ✅ CAMBIO CRÍTICO: Solo se ve si está PAGADO -->
+                      @if (t.estado === 'Confirmado') {
+                         <button (click)="reprogramarTurno(t)" class="icon-btn bg-white text-amber-500 hover:bg-amber-500 hover:text-white border border-amber-200" title="Reprogramar">
+                            <fa-icon [icon]="icons.reprogramar"></fa-icon>
+                         </button>
+                      }
+
+                      <!-- E. CANCELAR -->
+                      @if (t.estado !== 'Vencido' && t.estado !== 'Finalizado' && t.estado !== 'Cancelado' && t.estado !== 'Rechazado' && t.estado !== 'Ausente') {
+                        <button (click)="cancelarTurno(t)" class="icon-btn toggle text-red-400 hover:text-red-600" title="Cancelar">
+                          <fa-icon [icon]="icons.cancelar"></fa-icon>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+
+              @if (turnosFiltrados().length === 0) {
+                <tr>
+                  <td colspan="7" class="text-center py-16 text-slate-400 italic bg-slate-50/30">
+                    <fa-icon [icon]="icons.faCalendarAlt" class="text-3xl mb-2 opacity-50"></fa-icon>
+                    <p>No hay turnos para los filtros seleccionados.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- VISTA MÓVIL (TARJETAS) -->
+        <div class="md:hidden flex flex-col gap-3 pb-20">
+          @for (t of turnosFiltrados(); track t.id) {
+            <div class="bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl p-4 shadow-lg relative overflow-hidden"
+                 [ngClass]="{'opacity-60': t.estado === 'Cancelado' || t.estado === 'Rechazado' || t.estado === 'Ausente'}">
+
+              <div class="absolute left-0 top-0 bottom-0 w-1"
+                   [ngClass]="{
+                     'bg-orange-400': t.estado === 'Pendiente de Pago',
+                     'bg-teal-500': t.estado === 'Confirmado' || t.estado === 'En Sala',
+                     'bg-red-400': esTurnoVencido(t) || t.estado === 'Cancelado' || t.estado === 'Ausente'
+                   }"></div>
+
+              <!-- CABECERA CON FECHA -->
+              <div class="flex justify-between items-start mb-3 pl-3">
+                <div class="flex flex-col">
+                  <span class="text-xs text-slate-500 font-bold uppercase">{{ t.fecha.toDate() | date:'dd/MM' }}</span>
+                  <span class="font-mono font-black text-xl text-slate-700">{{ t.hora }}</span>
+                  @if(esTurnoVencido(t)) { <span class="text-[10px] font-bold bg-red-100 text-red-600 px-2 py-0.5 rounded border border-red-200 w-fit mt-1">VENCIDO</span> }
+                </div>
+
+                <span class="status-badge text-[10px] px-2 py-0.5" [ngClass]="{
+                  'warning': t.estado === 'Pendiente de Pago',
+                  'activo': t.estado === 'Confirmado',
+                  'bg-blue-100 text-blue-700 border-blue-200': t.estado === 'En Sala',
+                  'inactivo': t.estado === 'Cancelado' || t.estado === 'Finalizado' || t.estado === 'Ausente'
+                }">{{ t.estado }}</span>
+              </div>
+
+              <!-- CUERPO -->
+              <div class="pl-3 flex flex-col gap-1 mb-3">
+                <div class="font-bold text-slate-800 text-sm">{{ t.pacienteData.nombre }}</div>
+                <div class="text-xs text-slate-500 flex items-center gap-2">
+                   <span class="font-mono">{{ t.pacienteData.dni }}</span>
+                   <span class="text-teal-700 font-bold">• {{ t.pacienteData.obraSocial }}</span>
+                </div>
+                <div class="text-xs text-slate-400 mt-1">
+                   Con: <span class="text-slate-600">{{ t.medicoData.nombre }}</span>
+                </div>
+              </div>
+
+              <!-- FOOTER ACCIONES MÓVIL -->
+              <div class="pl-3 pt-3 border-t border-slate-200/50 flex justify-between items-center">
+                <div class="flex flex-col">
+                  @if (t.montoAbonar > 0) {
+                    <span class="font-bold text-slate-700 text-sm">${{ t.montoAbonar }}</span>
+                    <div class="flex items-center gap-1 text-[10px] text-slate-500 uppercase">
+                      {{ t.metodoPago }}
+                      @if(t.comprobanteBase64) { <fa-icon [icon]="icons.clip" class="text-blue-500"></fa-icon> }
+                    </div>
+                  } @else {
+                    <span class="text-xs font-bold text-teal-600">Bonificado</span>
+                  }
+                </div>
+
+                <div class="flex gap-2">
+                   @if (t.estado === 'Pendiente de Pago' && t.comprobanteBase64 && !esTurnoVencido(t)) {
+                     <button (click)="revisarComprobante(t)" class="icon-btn bg-white text-blue-500 w-8 h-8"><fa-icon [icon]="icons.clip" class="text-xs"></fa-icon></button>
+                   }
+                   @if (t.estado === 'Pendiente de Pago' && t.metodoPago === 'Efectivo' && !esTurnoVencido(t)) {
+                     <button (click)="confirmarPago(t)" class="icon-btn bg-white text-green-600 w-8 h-8"><fa-icon [icon]="icons.cobrar" class="text-xs"></fa-icon></button>
+                   }
+                   @if (t.estado === 'Confirmado') {
+                     <button (click)="darPresente(t)" class="icon-btn bg-white text-teal-600 w-8 h-8"><fa-icon [icon]="icons.recepcion" class="text-xs"></fa-icon></button>
+                     <!-- Reprogramar móvil -->
+                     <button (click)="reprogramarTurno(t)" class="icon-btn bg-white text-amber-500 w-8 h-8"><fa-icon [icon]="icons.reprogramar" class="text-xs"></fa-icon></button>
+                   }
+                   @if (t.estado !== 'Finalizado' && t.estado !== 'Cancelado' && t.estado !== 'Rechazado' && t.estado !=='Vencido') {
+                     <button (click)="cancelarTurno(t)" class="icon-btn toggle text-red-400 w-8 h-8"><fa-icon [icon]="icons.cancelar" class="text-xs"></fa-icon></button>
+                   }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COMPROBANTE (Mismo de siempre) -->
+@if (isComprobanteOpen() && turnoSeleccionado) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-slate-50 px-6 py-4 border-b flex justify-between items-center">
+        <h3 class="font-bold text-lg text-slate-800">Revisión de Pago</h3>
+        <button (click)="closeComprobante()" class="text-slate-400 hover:text-slate-600"><fa-icon [icon]="icons.close" class="text-xl"></fa-icon></button>
+      </div>
+      <div class="p-4 bg-slate-100 flex-1 overflow-y-auto flex justify-center">
+         <img [src]="turnoSeleccionado.comprobanteBase64" class="max-w-full rounded-lg shadow-md border border-slate-300" alt="Comprobante">
+      </div>
+      <div class="p-4 bg-white text-center">
+        <p class="text-sm text-slate-600 mb-1">Paciente: <span class="font-bold">{{ turnoSeleccionado.pacienteData.nombre }}</span></p>
+        <p class="text-sm text-slate-600 mb-4">Monto Esperado: <span class="font-bold text-teal-600 text-lg">${{ turnoSeleccionado.montoAbonar }}</span></p>
+        <div class="grid grid-cols-2 gap-4">
+          <button (click)="procesarTransferencia('RECHAZAR')" class="py-3 rounded-xl font-bold text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors">Rechazar</button>
+          <button (click)="procesarTransferencia('APROBAR')" class="py-3 rounded-xl font-bold text-white bg-green-500 hover:bg-green-600 shadow-lg shadow-green-500/30 transition-colors">Aprobar Pago</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

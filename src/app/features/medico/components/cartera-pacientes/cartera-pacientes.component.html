@@ -1,0 +1,116 @@
+<div class="w-full h-full p-4 flex flex-col">
+
+  <!-- CONTENEDOR PRINCIPAL (Glass) -->
+  <div class="content-card animate-fade-in">
+
+    <!-- HEADER + BUSCADOR -->
+    <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3 drop-shadow-sm">
+          <fa-icon [icon]="icons.user" class="text-teal-600"></fa-icon>
+          Cartera de Pacientes
+        </h2>
+        <p class="text-slate-600 font-medium text-sm">Historial de personas atendidas</p>
+      </div>
+
+      <!-- BUSCADOR (Estilo Glass Píldora) -->
+      <div class="relative w-full md:w-72 group">
+        <fa-icon [icon]="icons.search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-10 group-focus-within:text-teal-500 transition-colors"></fa-icon>
+        <input type="text"
+               placeholder="Buscar por nombre o DNI..."
+               [ngModel]="filtro()"
+               (ngModelChange)="filtro.set($event)"
+               class="search-glass">
+      </div>
+    </div>
+
+    <!-- ÁREA DE LISTA -->
+    <div class="table-section relative flex flex-col flex-1">
+
+      @if (loading()) {
+        <div class="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-sm z-10">
+          <div class="w-12 h-12 border-4 border-white/50 border-t-teal-500 rounded-full animate-spin"></div>
+        </div>
+      }
+
+      <!-- HEADER LISTA -->
+      <div class="grid grid-cols-12 px-6 py-4 border-b border-teal-500/20 bg-white/20 text-[11px] font-black text-slate-600 uppercase tracking-widest backdrop-blur-md">
+        <div class="col-span-5">Paciente</div>
+        <div class="col-span-3">DNI</div>
+        <div class="col-span-3 text-center">Última Visita</div>
+        <div class="col-span-1 text-right">HC</div>
+      </div>
+
+      <!-- LISTA SCROLLABLE -->
+      <div class="overflow-y-auto custom-scrollbar flex-1 p-2 space-y-1">
+
+        @for (p of pacientesFiltrados(); track p.uid) {
+          <!-- FILA (Estilo Glass Interactivo) -->
+          <div class="patient-row group">
+
+            <!-- PACIENTE -->
+            <div class="col-span-5 flex items-center gap-3 overflow-hidden pl-2">
+              <div class="relative shrink-0">
+                <img [src]="p.foto || defaultImage" (error)="handleImageError($event)"
+                     class="w-10 h-10 rounded-full object-cover border-2 border-white/70 shadow-sm group-hover:scale-110 transition-transform duration-300">
+              </div>
+              <div class="truncate">
+                <p class="font-bold text-slate-800 text-sm group-hover:text-teal-700 transition-colors truncate">
+                  {{ p.nombreCompleto }}
+                </p>
+                <span class="text-[10px] font-bold text-teal-600 bg-teal-50/50 px-2 py-0.5 rounded border border-teal-100/50">
+                  {{ p.obraSocial || 'Particular' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- DNI -->
+            <div class="col-span-3 font-mono text-sm text-slate-600 font-bold flex items-center">
+              {{ p.dni || '---' }}
+            </div>
+
+            <!-- ULTIMA VISITA -->
+            <div class="col-span-3 text-center flex justify-center items-center">
+              <span class="inline-flex items-center gap-1.5 bg-white/50 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold border border-white/60 shadow-sm">
+                 <fa-icon [icon]="icons.date" class="text-teal-500"></fa-icon>
+                 {{ p.ultimaVisita | date:'dd/MM/yyyy' }}
+              </span>
+            </div>
+
+            <!-- ACCIÓN (Ver Historia) -->
+            <div class="col-span-1 flex justify-end items-center pr-2">
+
+              <button (click)="abrirModalVideo(p)"
+                    class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-500 hover:text-white transition-all flex items-center justify-center shadow-sm"
+                    title="Programar Videoconsulta">
+              <fa-icon [icon]="icons.video" class="text-xs"></fa-icon>
+            </button>
+
+              <!-- Botón Circular Teal -->
+              <button (click)="verHistoriaClinica(p)"
+                      class="w-9 h-9 rounded-full bg-white text-teal-600 border border-teal-100 hover:bg-teal-500 hover:text-white hover:border-teal-500 transition-all flex items-center justify-center shadow-sm active:scale-95"
+                      title="Ver Historia Clínica">
+                <fa-icon [icon]="icons.file"></fa-icon>
+              </button>
+            </div>
+
+          </div>
+        }
+
+        @if (pacientesFiltrados().length === 0 && !loading()) {
+          <div class="flex flex-col items-center justify-center h-64 text-slate-400">
+            <fa-icon [icon]="icons.search" class="text-4xl mb-3 opacity-20"></fa-icon>
+            <p class="font-medium">No se encontraron pacientes.</p>
+          </div>
+        }
+
+      </div>
+    </div>
+  </div>
+</div>
+@if (pacienteParaVideo()) {
+  <app-modal-cita-video
+    [paciente]="pacienteParaVideo()!"
+    (cerrar)="pacienteParaVideo.set(null)">
+  </app-modal-cita-video>
+}

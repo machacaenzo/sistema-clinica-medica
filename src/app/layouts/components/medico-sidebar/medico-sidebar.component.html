@@ -1,0 +1,108 @@
+<aside class="w-full h-full">
+  <!-- Fondo con un toque Cyan muy suave para diferenciar -->
+  <div class="sidebar-glass bg-cyan-50/30">
+
+    <!-- 1. HEADER (LOGO) -->
+    <div class="sidebar-header flex flex-col items-center gap-3">
+      @if (clinicaService.clinicaData()?.logo) {
+        <img [src]="clinicaService.clinicaData()?.logo"
+             alt="Logo Clínica"
+             class="w-16 h-16 object-contain drop-shadow-md hover:scale-105 transition-transform">
+      } @else {
+        <div class="w-12 h-12 bg-cyan-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+          <fa-icon [icon]="icons.medico" class="text-xl"></fa-icon>
+        </div>
+      }
+
+      <h1 class="text-lg font-black text-slate-800 tracking-tight leading-none">
+        Portal Médico
+      </h1>
+    </div>
+
+    <!-- 2. PERFIL -->
+    @if (authService.currentUser(); as user) {
+      <div class="profile-section">
+        <div class="relative">
+          <img [src]="user.fotoURL || defaultImage"
+               (error)="handleImageError($event)">
+          <!-- Punto de estado Online -->
+          <div class="absolute bottom-1 right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+        </div>
+
+        <h3 class="text-slate-800 font-bold text-base text-center mt-2 leading-tight">
+          {{ user.displayName }}
+        </h3>
+
+        <!-- Badge Especialista -->
+        <span class="role-badge bg-cyan-50 text-cyan-700 border-cyan-200 mt-1">
+          Especialista
+        </span>
+      </div>
+    }
+
+    <!-- 3. NAVEGACIÓN -->
+    <nav class="flex-1 overflow-y-auto py-2 px-2 custom-scrollbar">
+      <ul class="space-y-1">
+
+        <!-- SECCIÓN 1: OPERATIVA -->
+        <li class="px-6 pt-4 pb-2 text-[10px] font-black text-cyan-900/60 uppercase tracking-widest">
+          Consultorio
+        </li>
+
+        <li>
+          <a routerLink="/medico/dashboard" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.dashboard"></fa-icon>
+            <span>Sala de Espera</span>
+          </a>
+        </li>
+
+        <li>
+          <a routerLink="/medico/pacientes" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.pacientes"></fa-icon>
+            <span>Mis Pacientes</span>
+          </a>
+        </li>
+
+        <!-- SECCIÓN 2: HERRAMIENTAS (NUEVO) -->
+        <li class="px-6 pt-6 pb-2 text-[10px] font-black text-cyan-900/60 uppercase tracking-widest border-t border-white/10 mt-2">
+          Herramientas
+        </li>
+
+        <li>
+          <a routerLink="/medico/mis-plantillas" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.plantillas"></fa-icon>
+            <span>Mis Plantillas</span>
+          </a>
+        </li>
+
+        <!-- SECCIÓN 3: PLANIFICACIÓN -->
+        <li class="px-6 pt-6 pb-2 text-[10px] font-black text-cyan-900/60 uppercase tracking-widest border-t border-white/10 mt-2">
+          Gestión
+        </li>
+
+        <li>
+          <a routerLink="/medico/agenda" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.agenda"></fa-icon>
+            <span>Mi Agenda</span>
+          </a>
+        </li>
+
+        <li>
+          <a routerLink="/medico/mi-perfil" class="nav-link" routerLinkActive="active">
+            <fa-icon [icon]="icons.perfil"></fa-icon>
+            <span>Mi Perfil Prof.</span>
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+
+    <!-- 4. LOGOUT -->
+    <div class="p-6 mt-auto border-t border-white/10 bg-white/5 backdrop-blur-md">
+      <button (click)="authService.logout()" class="logout-btn">
+        <fa-icon [icon]="icons.logout"></fa-icon> <span>Cerrar Consultorio</span>
+      </button>
+    </div>
+
+  </div>
+</aside>

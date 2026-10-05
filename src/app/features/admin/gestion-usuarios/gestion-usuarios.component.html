@@ -1,0 +1,312 @@
+<div class="w-full h-full p-4 flex flex-col">
+
+  <div class="content-card animate-fade-in">
+    <!-- HEADER Y FILTROS -->
+    <div class="filters-area">
+      <div class="w-full md:w-auto">
+        <h2 class="text-2xl font-bold text-slate-800 drop-shadow-sm">Gestión de Usuarios</h2>
+        <p class="text-slate-600 font-medium text-sm">Administración del sistema</p>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+        <!-- Buscador -->
+        <div class="relative w-full md:w-64">
+          <fa-icon [icon]="icons.faSearch" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 z-10"></fa-icon>
+          <input type="text" placeholder="Buscar..." class="search-glass" (input)="onSearch($event)">
+        </div>
+
+        <!-- Filtros -->
+        <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-start bg-white/20 p-1.5 rounded-2xl backdrop-blur-md border border-white/30">
+          <div class="relative">
+            <select (change)="onRoleFilter($event)" class="select-glass pr-6 text-sm">
+              <option value="">Todos</option>
+              <option value="paciente">Paciente</option>
+              <option value="medico">Médico</option>
+              <option value="empleado">Empleado</option>
+              <option value="administrador">Admin</option>
+            </select>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600 text-[10px]">▼</div>
+          </div>
+          <div class="h-6 w-px bg-slate-400/50 mx-1"></div>
+          <label class="flex items-center gap-2 cursor-pointer select-none pr-2">
+            <span class="text-xs font-bold text-slate-600 uppercase hidden sm:inline">Inactivos</span>
+            <div class="relative">
+              <input type="checkbox" (change)="toggleInactive($event)" class="sr-only peer">
+              <div class="w-8 h-4 bg-slate-400/50 rounded-full peer peer-checked:bg-slate-600 transition-colors"></div>
+              <div class="absolute left-0 top-0 bg-white w-4 h-4 rounded-full shadow-sm transition-transform peer-checked:translate-x-4 border border-slate-300"></div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA DE DATOS -->
+    <div class="table-section overflow-hidden relative custom-scrollbar">
+      <div class="absolute inset-0 overflow-auto p-4">
+
+        <!-- DESKTOP -->
+        <div class="hidden md:block table-section bg-white/30 backdrop-blur-xl border border-white/50 rounded-3xl shadow-inner">
+          <table class="glass-table w-full table-fixed">
+            <thead class="sticky top-0 z-10">
+              <tr>
+                <th class="text-left pl-6 py-5 w-auto">Usuario</th>
+                <th class="text-left py-5 w-[25%]">Contacto</th>
+                <th class="text-left py-5 w-[15%]">Rol</th>
+                <th class="text-center py-5 w-[140px]">Estado</th>
+                <th class="text-right pr-6 py-5 w-[100px]">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of filteredUsers(); track user.uid) {
+                <tr class="transition-all duration-200 border-b border-teal-500/30 hover:bg-white/40">
+                  <td class="text-left pl-6 py-4 align-middle truncate">
+                    <div class="flex items-center gap-3">
+                      <img [src]="user.fotoURL || defaultImage" (error)="handleImageError($event)"
+                           class="w-10 h-10 rounded-full object-cover border-2 border-white/60 shadow-sm min-w-[2.5rem]">
+                      <span class="font-bold text-slate-800 truncate">{{ user.displayName }}</span>
+                    </div>
+                  </td>
+                  <td class="text-left py-4 align-middle truncate">
+                    <span class="text-slate-600 font-mono text-xs bg-white/40 px-2 py-1 rounded-md border border-white/30">
+                      {{ user.email }}
+                    </span>
+                  </td>
+                  <td class="text-left py-4 align-middle">
+                    <span class="role-badge">{{ user.role }}</span>
+                  </td>
+                  <td class="text-center py-4 align-middle">
+                    <span class="status-badge" [ngClass]="user.estado === 'Activo' ? 'activo' : 'inactivo'">
+                      {{ user.estado }}
+                    </span>
+                  </td>
+                  <td class="text-right pr-6 py-4 align-middle">
+                    <div class="flex justify-end gap-2">
+                      <button (click)="openEditModal(user)" class="icon-btn edit" title="Editar">
+                        <fa-icon [icon]="icons.faEdit" class="text-sm"></fa-icon>
+                      </button>
+                      <button (click)="toggleUserStatus(user)" class="icon-btn toggle" [title]="user.estado === 'Activo' ? 'Desactivar' : 'Reactivar'">
+                        <fa-icon [icon]="user.estado === 'Activo' ? icons.faTrash : icons.faUndo" class="text-sm"></fa-icon>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- MOBILE -->
+        <div class="md:hidden flex flex-col gap-4 pb-20">
+          @for (user of filteredUsers(); track user.uid) {
+            <div class="bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl p-4 shadow-lg relative overflow-hidden">
+              <div class="absolute bottom-0 left-0 w-full h-1 bg-teal-500/30"></div>
+              <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center gap-3">
+                  <img [src]="user.fotoURL || defaultImage" (error)="handleImageError($event)"
+                       class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm bg-white">
+                  <div>
+                    <h3 class="font-bold text-slate-800">{{ user.displayName }}</h3>
+                    <p class="text-xs text-slate-500 font-mono">{{ user.email }}</p>
+                  </div>
+                </div>
+                <span class="role-badge text-xs px-2 py-1">{{ user.role }}</span>
+              </div>
+              <div class="flex justify-between items-center mt-4 pt-3 border-t border-white/30">
+                <span class="status-badge" [ngClass]="user.estado === 'Activo' ? 'activo' : 'inactivo'">{{ user.estado }}</span>
+                <div class="flex gap-3">
+                  <button (click)="openEditModal(user)" class="icon-btn edit w-10 h-10"><fa-icon [icon]="icons.faEdit"></fa-icon></button>
+                  <button (click)="toggleUserStatus(user)" class="icon-btn toggle w-10 h-10"><fa-icon [icon]="user.estado === 'Activo' ? icons.faTrash : icons.faUndo"></fa-icon></button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (filteredUsers().length === 0) {
+          <div class="flex flex-col items-center justify-center h-64 opacity-50">
+            <fa-icon [icon]="icons.faSearch" class="text-5xl mb-3 text-slate-500"></fa-icon>
+            <p class="text-slate-600 font-medium text-lg">No se encontraron usuarios.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDICIÓN / CREACIÓN -->
+@if (isModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-fade-in">
+    <!-- El ancho del modal se adapta si hay formulario extra -->
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 flex flex-col max-h-[90vh]"
+         [ngClass]="(showMedicoForm() || showEmpleadoForm()) ? 'w-full max-w-4xl' : 'w-full max-w-lg'">
+
+      <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+        <h3 class="font-bold text-xl text-slate-800">Editar Usuario</h3>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+          <fa-icon [icon]="icons.faTimes" class="text-xl"></fa-icon>
+        </button>
+      </div>
+
+      <div class="p-8 overflow-y-auto custom-scrollbar">
+        <form [formGroup]="userForm" (ngSubmit)="saveChanges()">
+
+          <div class="grid gap-8" [ngClass]="(showMedicoForm() || showEmpleadoForm()) ? 'md:grid-cols-2' : 'grid-cols-1'">
+
+            <!-- COLUMNA IZQUIERDA: DATOS DE AUTH -->
+            <div class="flex flex-col gap-5">
+              <h4 class="text-sm uppercase tracking-wide text-slate-400 font-bold mb-2">Perfil de Usuario</h4>
+
+              <!-- FOTO -->
+              <div class="flex items-center gap-5 mb-2">
+                <div class="relative group cursor-pointer shrink-0">
+                  <img [src]="imagePreview() || defaultImage" (error)="handleImageError($event)"
+                       class="w-20 h-20 rounded-full object-cover border-4 border-slate-100 shadow-md group-hover:border-cyan-200 transition-colors">
+                  <label class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                    <fa-icon [icon]="icons.faCamera"></fa-icon>
+                    <input type="file" class="hidden" (change)="onFileSelected($event)" accept="image/*">
+                  </label>
+                </div>
+                <div class="flex-1">
+                  <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre Completo</label>
+                  <input type="text" formControlName="displayName" class="input-field bg-white w-full rounded border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none">
+                  <p class="text-[10px] text-slate-400 mt-1 font-mono">ID: {{ selectedUser?.uid | slice:0:8 }}...</p>
+                </div>
+              </div>
+
+              <div class="h-px w-full bg-slate-100 my-1"></div>
+
+              <!-- EMAIL -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Correo Electrónico</label>
+                <input type="email" class="w-full bg-slate-100 border border-transparent rounded-lg px-3 py-2 text-slate-500 cursor-not-allowed text-sm" [value]="selectedUser?.email" disabled>
+              </div>
+
+              <!-- ROL -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Rol Asignado</label>
+                <div class="relative">
+                  <select formControlName="role"
+                          [class.opacity-50]="isRoleLocked()"
+                          [class.cursor-not-allowed]="isRoleLocked()"
+                          class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm appearance-none bg-white focus:ring-2 focus:ring-teal-400 outline-none cursor-pointer">
+                    <option value="paciente">Paciente</option>
+                    <option value="medico">Médico</option>
+                    <option value="empleado">Empleado</option>
+                    <option value="administrador">Administrador</option>
+                  </select>
+                  @if (!isRoleLocked()) {
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">▼</div>
+                  }
+                </div>
+
+                @if (isRoleLocked()) {
+                  <div class="mt-2 flex items-start gap-2 text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100 animate-fade-in">
+                    <fa-icon [icon]="icons.faLock" class="mt-0.5 text-xs"></fa-icon>
+                    <p class="text-[11px] leading-tight">
+                      <strong>Rol Bloqueado:</strong> Usuario operativo. Para cambiar su rol, desactívelo y cree un usuario nuevo.
+                    </p>
+                  </div>
+                }
+
+                @if ((showMedicoForm() || showEmpleadoForm()) && !isRoleLocked()) {
+                  <div class="mt-2 flex items-center gap-2 text-cyan-600 text-xs font-medium animate-pulse">
+                    <span>👉</span> <span>Complete los datos a la derecha</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- COLUMNA DERECHA 1: MÉDICO -->
+            @if (showMedicoForm()) {
+              <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 animate-fade-in-right flex flex-col justify-center">
+                <div class="mb-6 flex items-center gap-2 text-cyan-600 border-b border-cyan-100 pb-3">
+                  <fa-icon [icon]="icons.faUserMd" class="text-xl"></fa-icon>
+                  <h4 class="text-sm uppercase tracking-wide font-bold">Credenciales Médicas</h4>
+                </div>
+                <div class="flex flex-col gap-5">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Especialidad <span class="text-red-400">*</span></label>
+                    <div class="relative">
+                      <select formControlName="especialidad" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm appearance-none bg-white focus:ring-2 focus:ring-cyan-400 outline-none cursor-pointer">
+                        <option value="" disabled selected>Seleccione una opción</option>
+                        <option value="Medicina Clínica">Medicina Clínica</option>
+                        <option value="Medicina General">Medicina General</option>
+                        <option value="Medicina de Familia">Medicina de Familia</option>
+                      </select>
+                      <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">▼</div>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nro. Matrícula <span class="text-red-400">*</span></label>
+                    <input type="text" formControlName="matricula" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-cyan-400 outline-none" placeholder="Ej: MN-12345">
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- COLUMNA DERECHA 2: EMPLEADO (NUEVO PANEL) -->
+            @if (showEmpleadoForm()) {
+              <div class="bg-teal-50/50 p-6 rounded-2xl border border-teal-100 animate-fade-in-right flex flex-col justify-center">
+                <div class="mb-6 flex items-center gap-2 text-teal-600 border-b border-teal-200 pb-3">
+                  <fa-icon [icon]="icons.faUserTie" class="text-xl"></fa-icon>
+                  <h4 class="text-sm uppercase tracking-wide font-bold">Datos Laborales</h4>
+                </div>
+
+                <div class="flex flex-col gap-5">
+                  <!-- PUESTO -->
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Puesto Asignado <span class="text-red-400">*</span></label>
+                    <div class="relative">
+                      <select formControlName="puesto" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm appearance-none bg-white focus:ring-2 focus:ring-teal-400 outline-none cursor-pointer">
+                        <option value="" disabled selected>Seleccione un puesto</option>
+                        <option value="Secretaria/o">Secretaria/o</option>
+                        <option value="Recepcionista">Recepcionista</option>
+                        <option value="Enfermero/a">Enfermero/a</option>
+                        <option value="Limpieza">Limpieza</option>
+                        <option value="Seguridad">Seguridad</option>
+                        <option value="Mantenimiento">Mantenimiento</option>
+                        <option value="Otro">Otro</option>
+                      </select>
+                      <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">▼</div>
+                    </div>
+                  </div>
+
+                  <!-- CUIL -->
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">CUIL <span class="text-red-400">*</span></label>
+                    <div class="relative">
+                        <fa-icon [icon]="icons.faIdCard" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></fa-icon>
+                        <input type="text" formControlName="cuil" placeholder="Ej: 20-12345678-9" class="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none">
+                    </div>
+                  </div>
+
+                  <!-- ✅ SWITCH ES JEFE -->
+                  <div class="flex items-center justify-between bg-white/60 p-3 rounded-xl border border-teal-200/50 mt-2">
+                    <div class="flex flex-col">
+                      <span class="text-sm font-bold text-teal-800">¿Es Supervisor/Jefe?</span>
+                      <span class="text-[10px] text-slate-500">Permite asignar tareas a otros.</span>
+                    </div>
+
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" formControlName="esJefe" class="sr-only peer">
+                      <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-500"></div>
+                    </label>
+                  </div>
+
+                </div>
+              </div>
+            }
+
+          </div>
+
+          <div class="flex justify-end gap-3 mt-8 pt-5 border-t border-slate-100">
+            <button type="button" (click)="closeModal()" class="px-6 py-2 text-slate-600 hover:bg-slate-100 rounded-full transition-colors font-medium text-sm">Cancelar</button>
+            <button type="submit" [disabled]="userForm.invalid" class="bg-teal-500 hover:bg-teal-600 text-white px-8 py-2 rounded-full shadow-lg shadow-teal-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold">
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

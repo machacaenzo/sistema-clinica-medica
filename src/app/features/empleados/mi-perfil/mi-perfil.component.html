@@ -1,0 +1,150 @@
+<div class="w-full h-full p-4 flex flex-col md:flex-row gap-6 animate-fade-in">
+
+  <!-- 1. TARJETA DE IDENTIFICACIÓN (Izquierda) - EFECTO GLASS -->
+  <div class="w-full md:w-1/3 flex flex-col">
+    <!-- ✅ CAMBIO: bg-white/40 backdrop-blur-xl border-white/50 -->
+    <div class="bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-xl border border-white/50 overflow-hidden relative flex flex-col">
+
+      <!-- Fondo Decorativo -->
+      <div class="h-32 bg-gradient-to-r from-teal-500 to-emerald-400 relative">
+        <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white/20 to-transparent"></div>
+      </div>
+
+      <!-- Contenido Perfil -->
+      <div class="px-6 pb-10 relative flex-1 flex flex-col items-center">
+
+        <!-- Foto (Centrada y flotando) -->
+        <div class="absolute -top-16 left-1/2 -translate-x-1/2 shadow-2xl rounded-full">
+          <img [src]="perfil()?.foto || defaultImage"
+               class="w-32 h-32 rounded-full border-[6px] border-white/80 bg-white object-cover shadow-inner">
+        </div>
+
+        <!-- ✅ CAMBIO: mt-20 (o más) para bajar el texto -->
+        <div class="mt-20 text-center w-full">
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight drop-shadow-sm">{{ perfil()?.nombre }}</h2>
+
+          <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
+            <span class="px-4 py-1.5 rounded-full bg-white/60 text-teal-800 text-xs font-bold border border-white shadow-sm uppercase tracking-wider backdrop-blur-sm">
+              {{ perfil()?.puesto }}
+            </span>
+
+            @if (perfil()?.esJefe) {
+              <span class="px-3 py-1.5 rounded-full bg-amber-100/90 text-amber-700 text-xs font-bold border border-amber-200 flex items-center gap-1 shadow-sm">
+                <fa-icon [icon]="icons.faStar" class="text-[10px]"></fa-icon> Supervisor
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="mt-10 space-y-4 w-full">
+          <!-- CUIL -->
+          <div class="flex items-center gap-4 p-4 bg-white/50 rounded-2xl border border-white/60 shadow-sm transition-transform hover:scale-[1.02]">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-teal-600 shadow-md">
+              <fa-icon [icon]="icons.faIdCard"></fa-icon>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">Identificación / CUIL</p>
+              <p class="text-slate-800 font-mono font-bold">{{ perfil()?.cuil || 'No registrado' }}</p>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="flex items-center gap-4 p-4 bg-white/50 rounded-2xl border border-white/60 shadow-sm transition-transform hover:scale-[1.02]">
+            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-teal-600 shadow-md">
+              <fa-icon [icon]="icons.faEnvelope"></fa-icon>
+            </div>
+            <div class="overflow-hidden">
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wide">Correo Institucional</p>
+              <p class="text-slate-800 font-medium text-sm truncate">{{ email() }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-auto pt-8">
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
+            <span class="relative flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+            <span class="text-xs font-bold text-emerald-700 uppercase tracking-wide">Estado: {{ perfil()?.estado }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. JORNADA LABORAL (Derecha) -->
+  <div class="flex-1 flex flex-col">
+    <!-- ✅ CAMBIO: backdrop-blur-xl y más transparencia -->
+    <div class="bg-white/40 backdrop-blur-xl rounded-[2.5rem] shadow-xl border border-white/50 p-8 h-full flex flex-col">
+
+      <div class="mb-6 flex items-center gap-4 border-b border-slate-200/50 pb-6">
+        <div class="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center shadow-lg shadow-teal-500/30">
+          <fa-icon [icon]="icons.faCalendarAlt" class="text-xl"></fa-icon>
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold text-slate-800">Jornada Laboral</h3>
+          <p class="text-sm text-slate-500 font-medium">Horarios asignados por RRHH</p>
+        </div>
+      </div>
+
+      <!-- GRID -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 overflow-y-auto custom-scrollbar p-1">
+
+        @for (dia of semana; track dia) {
+          @let dataDia = getJornadaDia(dia);
+          @let esActivo = dataDia?.activo;
+
+          <!-- TARJETA DÍA -->
+          <div class="rounded-2xl p-5 border transition-all duration-300 relative overflow-hidden group"
+               [ngClass]="esActivo
+                  ? 'bg-white border-white shadow-md hover:shadow-lg hover:-translate-y-1'
+                  : 'bg-slate-100/50 border-slate-200 opacity-70 hover:opacity-100'">
+
+            <!-- Barra lateral de color -->
+            <div class="absolute left-0 top-0 bottom-0 w-1.5" [ngClass]="esActivo ? 'bg-teal-500' : 'bg-slate-300'"></div>
+
+            <div class="flex justify-between items-center mb-4 pl-2">
+              <span class="font-bold text-lg" [ngClass]="esActivo ? 'text-slate-800' : 'text-slate-500'">{{ dia }}</span>
+              @if (esActivo) {
+                <span class="text-[10px] font-bold bg-teal-50 text-teal-700 px-2 py-0.5 rounded border border-teal-100">ACTIVO</span>
+              }
+            </div>
+
+            <div class="space-y-2 pl-2">
+              @if (esActivo && dataDia?.franjas?.length) {
+                @for (franja of dataDia?.franjas; track $index) {
+                  <div class="flex items-center justify-between text-sm bg-teal-50/50 px-3 py-2 rounded-lg border border-teal-100/50 group-hover:bg-teal-50 transition-colors">
+                    <div class="flex items-center gap-2">
+                        <fa-icon [icon]="icons.faClock" class="text-teal-500 text-xs"></fa-icon>
+                        <span class="font-bold text-slate-700">Turno {{ $index + 1 }}</span>
+                    </div>
+                    <span class="font-mono text-slate-600 font-medium text-xs bg-white px-2 py-0.5 rounded border border-white shadow-sm">
+                        {{ franja.inicio }} - {{ franja.fin }}
+                    </span>
+                  </div>
+                }
+              } @else {
+                <div class="flex flex-col items-center justify-center py-4 text-slate-400 gap-2">
+                  <div class="w-8 h-1 bg-slate-200 rounded-full"></div>
+                  <span class="text-xs font-bold uppercase tracking-widest">Franco</span>
+                </div>
+              }
+            </div>
+
+          </div>
+        }
+
+      </div>
+
+      <div class="mt-auto pt-6 text-center">
+        <p class="text-[10px] text-slate-400 font-medium bg-slate-50 inline-block px-4 py-2 rounded-full border border-slate-100">
+          * Los cambios de horario deben solicitarse a Administración con 48hs de antelación.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,18 @@
+@import '../../../admin/admin-theme';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Estilo para la lista de días cuando se desborda
+.custom-scrollbar {
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+  }
+}

@@ -1,0 +1,65 @@
+<div class="flex flex-col h-full bg-white/50 rounded-2xl border border-white/60 p-4">
+
+  <!-- CONTROLES -->
+  <div class="flex justify-between items-center mb-4 shrink-0">
+
+    <!-- Selector Vista (Siempre visible para poder ver ambos lados) -->
+    <div class="flex bg-slate-200/50 p-1 rounded-lg">
+      <button type="button" (click)="cambiarVista('FRENTE')"
+              class="px-3 py-1 text-xs font-bold rounded-md transition-all"
+              [ngClass]="vistaActual() === 'FRENTE' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">
+        Frente
+      </button>
+      <button type="button" (click)="cambiarVista('DORSO')"
+              class="px-3 py-1 text-xs font-bold rounded-md transition-all"
+              [ngClass]="vistaActual() === 'DORSO' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">
+        Dorso
+      </button>
+    </div>
+
+    <!-- Acciones (Solo visibles si se puede editar) -->
+    @if (!readOnly) {
+      <div class="flex gap-2 animate-fade-in">
+        <button type="button" (click)="borrarUltimo()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-400 hover:text-orange-500 shadow-sm transition-colors" title="Deshacer último">
+          <fa-icon [icon]="icons.undo"></fa-icon>
+        </button>
+        <button type="button" (click)="borrarTodo()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-400 hover:text-red-500 shadow-sm transition-colors" title="Borrar todo">
+          <fa-icon [icon]="icons.trash"></fa-icon>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- ÁREA DE DIBUJO -->
+  <div class="flex-1 relative flex justify-center items-center overflow-hidden bg-white/40 rounded-xl border border-slate-100 p-2">
+
+    <!-- Wrapper relativo ajustado -->
+    <div class="relative inline-block h-full">
+
+      <!-- IMAGEN BASE -->
+      <img [src]="vistaActual() === 'FRENTE' ? imgFrente : imgDorso"
+           class="h-full w-auto object-contain select-none"
+           [ngClass]="readOnly ? 'cursor-default' : 'cursor-crosshair'"
+           (click)="agregarPunto($event)">
+
+      <!-- CONTENEDOR DE PUNTOS (Atravesable) -->
+      <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+        @for (p of puntos; track $index) {
+          @if (p.vista === vistaActual()) {
+            <div class="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-md transform -translate-x-1/2 -translate-y-1/2 animate-bounce-in"
+                 [style.left.%]="p.x"
+                 [style.top.%]="p.y">
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+  </div>
+
+  @if (!readOnly) {
+    <p class="text-center text-[10px] text-slate-400 mt-2 font-medium shrink-0 animate-fade-in">
+      Haz clic sobre el cuerpo para marcar zonas de dolor.
+    </p>
+  }
+</div>

@@ -1,0 +1,100 @@
+// src/app/layouts/components/_sidebar-theme.scss
+
+// 1. EL CONTENEDOR PRINCIPAL (Efecto Vidrio)
+.sidebar-glass {
+  @apply h-full flex flex-col;
+  // Fondo casi transparente, mucho blur
+  @apply bg-white/10 backdrop-blur-xl;
+  // Borde derecho sutil
+  @apply border-r border-white/20;
+  // Sombra suave
+  @apply shadow-2xl;
+
+  // Transición suave al cargar
+  @apply transition-all duration-300;
+}
+
+// 2. HEADER DEL SIDEBAR (Logo)
+.sidebar-header {
+  @apply pt-8 pb-6 px-6 text-center border-b border-white/10;
+}
+
+// 3. ESTILO BASE DE LOS ENLACES
+.nav-link {
+  @apply flex items-center gap-4 px-6 py-4 mx-3 rounded-xl transition-all duration-300;
+  @apply text-slate-600 font-medium; // Texto gris oscuro por defecto
+  cursor: pointer;
+
+  // Hover sutil para inactivos
+  &:hover {
+    @apply bg-white/20 text-slate-800 translate-x-1;
+  }
+
+  fa-icon {
+    @apply text-lg w-6 text-center transition-colors;
+  }
+}
+
+// 4. ENLACE ACTIVO (Estilo "Pastilla" Teal)
+.nav-link.active {
+  // Fondo degradado
+  @apply bg-gradient-to-r from-teal-400 to-cyan-500;
+  // Sombra de color
+  @apply shadow-lg shadow-cyan-500/30;
+  // Texto blanco
+  @apply text-white font-bold;
+
+  // Anulamos el efecto hover de desplazamiento
+  &:hover {
+    @apply translate-x-0;
+  }
+}
+
+// 5. PERFIL DE USUARIO
+.profile-section {
+  @apply flex flex-col items-center p-8 border-b border-white/10 mb-4;
+
+  img {
+    @apply w-20 h-20 rounded-full object-cover mb-3;
+    @apply border-4 border-white/20 shadow-sm; // Borde de vidrio
+    @apply bg-white; // Fondo blanco por si la img es transparente
+  }
+
+  h3 {
+    @apply text-slate-800 font-bold text-lg text-center leading-tight mb-1;
+  }
+}
+
+// 6. BADGE DE ROL (Etiqueta debajo del nombre)
+.role-badge {
+  @apply mt-2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide;
+  // Fondo blanco muy transparente + Blur
+  @apply bg-white/10 backdrop-blur-md;
+  // Borde sutil
+  @apply border border-white/20;
+  // Texto resaltado
+  @apply text-cyan-600 shadow-sm;
+}
+
+// 7. BOTÓN CERRAR SESIÓN (Footer)
+.logout-btn {
+  @apply w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl;
+  @apply text-slate-500 font-medium transition-all duration-300;
+  @apply border border-transparent hover:border-red-200 hover:bg-red-50 hover:text-red-500;
+  cursor: pointer;
+
+  fa-icon {
+    @apply transition-transform duration-300;
+  }
+
+  &:hover fa-icon {
+    @apply rotate-180; // Efecto de giro al pasar el mouse
+  }
+}
+
+// 8. UTILIDAD SCROLLBAR
+.custom-scrollbar {
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { @apply bg-slate-300/50 rounded-full; }
+  &::-webkit-scrollbar-track { @apply bg-transparent; }
+}

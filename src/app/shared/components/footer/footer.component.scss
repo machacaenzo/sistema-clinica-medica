@@ -1,0 +1,60 @@
+/* =========================================
+   FOOTER COMPONENT STYLES
+   ========================================= */
+
+// 1. ENLACES DE NAVEGACIÓN
+// --------------------------------------------------
+.footer-link {
+  @apply flex items-center text-slate-400 text-sm transition-all duration-300 cursor-pointer;
+
+  // El icono dentro del link
+  fa-icon {
+    @apply text-cyan-600 mr-2 text-xs transition-transform duration-300;
+  }
+
+  // Efecto Hover
+  &:hover {
+    @apply text-cyan-400 translate-x-1; // Se mueve a la derecha y cambia de color
+
+    fa-icon {
+      @apply text-cyan-300; // El icono brilla más
+    }
+  }
+}
+
+// 2. BOTONES REDES SOCIALES
+// --------------------------------------------------
+.social-btn {
+  @apply w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center transition-all duration-300 relative overflow-hidden;
+
+  // Icono base
+  fa-icon {
+    @apply text-slate-400 text-lg transition-colors duration-300 z-10;
+  }
+
+  // Hover del botón
+  &:hover {
+    @apply bg-cyan-500 -translate-y-1 shadow-lg shadow-cyan-500/30; // Sube un poco y brilla
+
+    fa-icon {
+      @apply text-white;
+    }
+  }
+
+  // Efecto de brillo al hacer click (opcional active state)
+  &:active {
+    @apply scale-95;
+  }
+}
+
+// 3. UTILIDADES DE TEXTO
+// --------------------------------------------------
+h3 {
+  @apply relative inline-block;
+
+  // Pequeña línea decorativa debajo del título (opcional)
+  &::after {
+    content: '';
+    @apply absolute -bottom-2 left-0 w-8 h-0.5 bg-cyan-500 rounded-full;
+  }
+}

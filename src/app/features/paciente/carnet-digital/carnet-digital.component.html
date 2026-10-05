@@ -1,0 +1,61 @@
+<div class="flex flex-col items-center gap-6 p-4 animate-fade-in">
+
+  <!-- TARJETA CREDENCIAL -->
+  <div class="relative w-full max-w-sm bg-gradient-to-br from-slate-900 to-indigo-950 rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 p-8 text-white">
+
+    <!-- Decoración de fondo -->
+    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+
+    <!-- Header Carnet -->
+    <div class="flex justify-between items-start mb-8 relative z-10">
+      <div>
+        <h2 class="text-xl font-black tracking-tighter text-indigo-400">CLÍNICA HIA</h2>
+        <p class="text-[10px] font-bold uppercase tracking-[0.2em] opacity-50">Credencial Digital</p>
+      </div>
+      <fa-icon [icon]="icons.shield" class="text-2xl text-indigo-500/50"></fa-icon>
+    </div>
+
+    <!-- QR CONTAINER -->
+    <div class="bg-white p-4 rounded-3xl shadow-inner flex flex-col items-center relative z-10 mx-auto w-fit">
+      @if (loading()) {
+        <div class="w-48 h-48 flex items-center justify-center text-slate-300">
+           <fa-icon [icon]="icons.refresh" class="animate-spin text-3xl"></fa-icon>
+        </div>
+      } @else if (qrData()) {
+        <qrcode [qrdata]="qrData()" [width]="180" [errorCorrectionLevel]="'M'" [margin]="0"></qrcode>
+      } @else {
+        <div class="w-48 h-48 flex flex-col items-center justify-center text-rose-500 bg-rose-50 rounded-2xl">
+           <fa-icon [icon]="icons.clock" class="text-3xl mb-2"></fa-icon>
+           <p class="text-[10px] font-black uppercase">Token Expirado</p>
+           <button (click)="generarNuevaLlave()" class="mt-2 text-xs underline font-bold">Generar otro</button>
+        </div>
+      }
+    </div>
+
+    <!-- Info Paciente -->
+    <div class="mt-8 border-t border-white/10 pt-6 relative z-10">
+      <p class="text-[9px] font-black text-indigo-300 uppercase tracking-widest mb-1">Titular de la cuenta</p>
+      <h3 class="text-lg font-bold truncate">{{ paciente()?.nombreCompleto }}</h3>
+
+      <div class="flex justify-between items-end mt-4">
+        <div>
+          <p class="text-[9px] font-black text-slate-500 uppercase">DNI Documento</p>
+          <p class="text-sm font-mono font-bold">{{ paciente()?.dni }}</p>
+        </div>
+
+        <!-- Contador de Seguridad -->
+        @if (qrData()) {
+          <div class="bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-xs font-mono font-bold tracking-tighter">{{ tiempoFormateado }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <p class="text-[10px] text-slate-400 max-w-xs text-center leading-relaxed">
+    Presenta este código QR en recepción para autorizar la exportación de tu Historia Clínica. El código es de un solo uso y expira automáticamente.
+  </p>
+</div>

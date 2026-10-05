@@ -1,0 +1,67 @@
+@import '../../../features/admin/_admin-theme.scss';
+
+// --- ANIMACIONES ---
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-slide-up { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+// --- TARJETAS DE TURNO ---
+.turn-card {
+  @apply bg-white rounded-3xl p-6 border border-slate-100 shadow-sm relative overflow-hidden transition-all duration-300;
+
+  &:hover {
+    @apply shadow-xl shadow-indigo-500/10 border-indigo-200 transform -translate-y-1;
+  }
+}
+
+// --- FECHA (Caja estilo calendario) ---
+.date-box {
+  @apply flex flex-col items-center justify-center rounded-2xl w-20 h-20 flex-shrink-0 border transition-colors;
+
+  // Estilo Default (Activo)
+  @apply bg-indigo-50 border-indigo-100 text-indigo-700;
+
+  // Variantes
+  &.vencido { @apply bg-slate-100 border-slate-200 text-slate-400; }
+}
+
+// --- BADGES ---
+.status-pill {
+  @apply px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border;
+
+  &.confirmado { @apply bg-emerald-50 text-emerald-600 border-emerald-100; }
+  &.pendiente { @apply bg-orange-50 text-orange-600 border-orange-100; }
+  &.finalizado { @apply bg-slate-100 text-slate-500 border-slate-200; }
+  &.cancelado { @apply bg-red-50 text-red-500 border-red-100; }
+}
+
+// --- BOTONES DE ACCIÓN ---
+.btn-action {
+  @apply px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2;
+
+  &.primary { @apply bg-indigo-50 text-indigo-600 hover:bg-indigo-100; }
+  &.danger { @apply bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500; }
+}
+
+// --- UTILS ---
+.search-glass {
+  @apply w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-12 pr-4 text-sm font-bold text-slate-700 outline-none transition-all;
+  &:focus {
+    @apply bg-white border-indigo-500 ring-4 ring-indigo-500/10;
+  }
+}
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}

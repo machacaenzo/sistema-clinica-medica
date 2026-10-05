@@ -1,0 +1,170 @@
+<div class="w-full h-full p-2 md:p-6 flex gap-6 relative overflow-hidden">
+
+  <!-- ============================================== -->
+  <!-- 1. CALENDARIO (LADO IZQUIERDO) -->
+  <!-- ============================================== -->
+  <div class="flex-1 flex flex-col h-full min-w-0 transition-all duration-300">
+
+    <!-- HEADER FLOTANTE -->
+    <div class="flex flex-col xl:flex-row justify-between items-center mb-6 gap-4">
+
+      <!-- NAVEGACIÓN (Izq) -->
+      <div class="flex items-center gap-2 bg-white/40 backdrop-blur-md p-1.5 rounded-2xl border border-white/60 shadow-sm">
+        <button mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate"
+          class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 hover:bg-white transition-all shadow-sm">
+          <fa-icon [icon]="icons.prev"></fa-icon>
+        </button>
+        <div class="px-4 font-black text-slate-800 uppercase tracking-widest text-sm min-w-[140px] text-center select-none">
+          {{ viewDate | date:'MMMM yyyy':'':'es' }}
+        </div>
+        <button mwlCalendarNextView [view]="view" [(viewDate)]="viewDate"
+          class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-600 hover:bg-white transition-all shadow-sm">
+          <fa-icon [icon]="icons.next"></fa-icon>
+        </button>
+      </div>
+
+      <!-- ACCIONES (Der) -->
+      <div class="flex flex-wrap justify-center gap-3">
+
+        <!-- ✅ BOTONES VISTA (RECUPERADOS) -->
+        <div class="flex bg-white/40 backdrop-blur-md p-1 rounded-xl border border-white/60 shadow-sm">
+          <button (click)="setView(CalendarView.Month)"
+                  class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                  [ngClass]="view === CalendarView.Month ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-white/50'">
+            Mes
+          </button>
+          <button (click)="setView(CalendarView.Week)"
+                  class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                  [ngClass]="view === CalendarView.Week ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-white/50'">
+            Semana
+          </button>
+          <button (click)="setView(CalendarView.Day)"
+                  class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
+                  [ngClass]="view === CalendarView.Day ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-white/50'">
+            Día
+          </button>
+        </div>
+
+        <!-- Botón Hoy -->
+        <button mwlCalendarToday [(viewDate)]="viewDate" (viewDateChange)="selectedDate.set($event)"
+          class="px-5 py-2 bg-teal-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-teal-500/30 hover:bg-teal-700 transition-all active:scale-95">
+          Hoy
+        </button>
+      </div>
+
+    </div>
+
+    <!-- CUERPO CALENDARIO -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar pr-2 pb-4">
+      @if (loading()) {
+        <div class="h-full flex items-center justify-center"><div class="animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div></div>
+      } @else {
+
+        @switch (view) {
+          @case (CalendarView.Month) {
+            <mwl-calendar-month-view
+              [viewDate]="viewDate"
+              [events]="events"
+              [refresh]="refresh"
+              [activeDayIsOpen]="false"
+              (dayClicked)="dayClicked($event.day)"
+              locale="es">
+            </mwl-calendar-month-view>
+          }
+          @case (CalendarView.Week) {
+            <mwl-calendar-week-view
+              [viewDate]="viewDate"
+              [events]="events"
+              [refresh]="refresh"
+              locale="es">
+            </mwl-calendar-week-view>
+          }
+          @case (CalendarView.Day) {
+            <mwl-calendar-day-view
+              [viewDate]="viewDate"
+              [events]="events"
+              [refresh]="refresh"
+              locale="es">
+            </mwl-calendar-day-view>
+          }
+        }
+
+      }
+    </div>
+
+     <div class="mt-2 px-4 py-3 bg-white/60 backdrop-blur-md rounded-xl flex flex-wrap gap-4 justify-center items-center border border-white/50 shadow-sm">
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-teal-500 shadow-sm"></span>
+        <span class="text-[10px] font-black text-slate-700 uppercase tracking-wide">Confirmado / En Sala</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-orange-500 shadow-sm"></span>
+        <span class="text-[10px] font-black text-slate-700 uppercase tracking-wide">Pendiente Pago</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-blue-500 shadow-sm"></span>
+        <span class="text-[10px] font-black text-slate-700 uppercase tracking-wide">En Atención</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-slate-500 shadow-sm"></span>
+        <span class="text-[10px] font-black text-slate-700 uppercase tracking-wide">Finalizado / Cancelado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 2. PANEL LATERAL (LADO DERECHO) -->
+  <!-- ============================================== -->
+  @if (isSidePanelOpen()) {
+    <div class="absolute inset-0 z-50 lg:static lg:z-auto lg:w-80 flex flex-col animate-slide-in">
+
+      <!-- Overlay Móvil -->
+      <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm lg:hidden" (click)="closeSidePanel()"></div>
+
+      <!-- Tarjeta Panel -->
+      <div class="relative w-full h-full glass-panel border-l border-white/60 shadow-2xl flex flex-col overflow-hidden bg-white/80 backdrop-blur-2xl rounded-l-[2rem] lg:rounded-2xl">
+
+        <!-- Header Panel -->
+        <div class="p-6 border-b border-slate-200/60 flex justify-between items-center shrink-0 bg-white/40">
+          <div>
+            <h3 class="text-2xl font-black text-slate-800 capitalize leading-none">{{ selectedDate() | date:'EEEE dd':'':'es' }}</h3>
+            <p class="text-xs text-teal-600 font-bold uppercase mt-1 tracking-wider">{{ selectedDate() | date:'MMMM yyyy':'':'es' }}</p>
+          </div>
+          <button (click)="closeSidePanel()" class="w-8 h-8 rounded-full bg-white hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors shadow-sm">
+            <fa-icon [icon]="icons.close"></fa-icon>
+          </button>
+        </div>
+
+        <!-- Lista Turnos -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+          @if (selectedEvents().length > 0) {
+            @for (ev of selectedEvents(); track ev) {
+              <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5" [style.background-color]="ev.color?.primary"></div>
+
+                <div class="flex justify-between items-start pl-3">
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-mono font-black text-slate-600 text-sm bg-slate-100 px-1.5 rounded">{{ ev.meta.hora }}</span>
+                    </div>
+                    <h4 class="font-bold text-slate-800 text-sm leading-tight">{{ ev.meta.paciente }}</h4>
+                  </div>
+
+                  <span class="text-[9px] font-bold uppercase px-2 py-1 rounded bg-slate-50 text-slate-500 border border-slate-200">
+                    {{ ev.meta.estado }}
+                  </span>
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="flex flex-col items-center justify-center h-64 text-slate-400 opacity-60">
+              <fa-icon [icon]="icons.today" class="text-5xl mb-4 text-slate-300"></fa-icon>
+              <p class="text-sm font-bold">Sin actividad</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

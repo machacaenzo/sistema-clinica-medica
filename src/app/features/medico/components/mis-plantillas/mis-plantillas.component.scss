@@ -1,0 +1,7 @@
+// Importamos el tema global del Admin (Subir niveles según corresponda)
+@import '../../../admin/admin-theme';
+
+:host {
+  display: block;
+  height: 100%;
+}

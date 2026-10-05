@@ -1,0 +1,97 @@
+<div class="video-container">
+
+  <!-- Usamos 'glass-panel' del Admin Theme para el fondo de vidrio -->
+  <div class="glass-panel max-w-2xl w-full flex flex-col overflow-hidden animate-fade-in !h-auto">
+
+    <!-- HEADER (Estilo Toolbar Glass) -->
+    <div class="p-6 border-b border-teal-500/20 bg-white/20 flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <!-- Icono Circular -->
+        <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 shadow-sm border border-teal-200">
+          <fa-icon [icon]="icons.video" class="text-xl"></fa-icon>
+        </div>
+        <div>
+          <h1 class="font-black text-xl text-slate-800 tracking-tight">Videoconsulta</h1>
+          @if (pacienteData()) {
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">
+              Paciente: <span class="text-teal-700">{{ pacienteData()?.nombreCompleto }}</span>
+            </p>
+          }
+        </div>
+      </div>
+
+      <!-- Botón Volver -->
+      <button (click)="volver()" class="icon-btn toggle" title="Cancelar y Volver">
+        <fa-icon [icon]="icons.back"></fa-icon>
+      </button>
+    </div>
+
+    @if (loading()) {
+      <div class="p-12 flex flex-col items-center justify-center text-slate-400 gap-3">
+        <div class="w-10 h-10 border-4 border-slate-200 border-t-teal-500 rounded-full animate-spin"></div>
+        <p class="text-sm font-medium">Cargando datos del turno...</p>
+      </div>
+    } @else {
+
+      <form [formGroup]="form" (ngSubmit)="finalizar()" class="p-8 space-y-6">
+
+        <!-- 1. Duración -->
+        <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-200 flex items-center gap-4 shadow-sm">
+          <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-400 shadow-sm">
+             <fa-icon [icon]="icons.clock"></fa-icon>
+          </div>
+          <div class="flex-1">
+            <label class="label-main">Duración (Minutos)</label>
+            <input type="number" formControlName="duracion" class="input-field bg-transparent border-none p-0 text-lg font-bold text-slate-700 focus:ring-0 placeholder-slate-300" placeholder="Ej: 30">
+          </div>
+        </div>
+
+        <!-- 2. Notas / Evolución -->
+        <div>
+          <label class="label-main flex items-center gap-2">
+            <fa-icon [icon]="icons.notes"></fa-icon> Notas de la Sesión
+          </label>
+          <textarea formControlName="notas" rows="6"
+                    class="input-field"
+                    placeholder="Resumen de lo conversado, evolución del paciente, indicaciones verbales..."></textarea>
+          @if (form.get('notas')?.invalid && form.get('notas')?.touched) {
+            <p class="text-[10px] text-red-500 font-bold mt-1 ml-1 flex items-center gap-1">
+               <span class="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span> Campo requerido
+            </p>
+          }
+        </div>
+
+        <!-- 3. Receta Digital -->
+        <div>
+          <div class="flex justify-between items-end mb-1.5">
+            <label class="label-main">Receta / Indicaciones (Opcional)</label>
+            <!-- Botón Imprimir Pequeño -->
+            <button type="button" (click)="imprimirReceta()" class="text-[10px] font-bold bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-800 hover:text-white transition-colors shadow-sm flex items-center gap-1 active:scale-95">
+              <fa-icon [icon]="icons.print"></fa-icon> Generar PDF
+            </button>
+          </div>
+          <textarea formControlName="tratamiento" rows="3"
+                    class="input-field"
+                    placeholder="Medicación o indicaciones escritas..."></textarea>
+        </div>
+
+        <!-- Footer -->
+        <div class="pt-6 border-t border-slate-200/60 flex justify-end">
+          <button type="submit" [disabled]="guardando()"
+                  class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-teal-500/30 transition-all active:scale-95 disabled:opacity-70 flex items-center gap-2">
+            @if (guardando()) {
+              <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <span>Guardando...</span>
+            }
+            @else {
+              <fa-icon [icon]="icons.save"></fa-icon>
+              <span>Finalizar y Guardar</span>
+            }
+          </button>
+        </div>
+
+      </form>
+    }
+
+  </div>
+</div>

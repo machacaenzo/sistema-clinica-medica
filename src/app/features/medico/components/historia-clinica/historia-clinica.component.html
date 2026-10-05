@@ -1,0 +1,84 @@
+<div class="h-full flex flex-col">
+
+  <!-- Header Sticky -->
+  <div class="p-4 bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-10 shrink-0">
+    <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+      <fa-icon [icon]="icons.history"></fa-icon> Historial de Visitas
+    </h4>
+  </div>
+
+  <!-- Lista -->
+  <div class="flex-1 overflow-y-auto custom-scrollbar p-0">
+    <div class="divide-y divide-teal-500/10">
+
+      @for (c of historial; track c.id) {
+        <div class="p-4 hover:bg-white/30 transition-colors cursor-pointer group relative">
+          <div class="absolute left-0 top-0 bottom-0 w-1 bg-teal-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+          <!-- Fecha -->
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-[10px] font-bold text-teal-700 bg-teal-50/80 px-2 py-0.5 rounded border border-teal-100">
+              {{ c.fechaString }}
+            </span>
+            <!-- Icono sutil si tiene adjuntos -->
+            @if (c.archivosAdjuntos && c.archivosAdjuntos.length > 0) {
+               <fa-icon [icon]="icons.clip" class="text-slate-300 text-xs"></fa-icon>
+            }
+          </div>
+
+          <!-- Diagnóstico y Motivo -->
+          <p class="text-sm font-bold text-slate-800 mb-1 leading-tight group-hover:text-teal-800 transition-colors">{{ c.diagnostico || 'Sin diagnóstico' }}</p>
+          <div class="text-xs text-slate-600 font-medium line-clamp-2 pl-2 border-l-2 border-slate-300 group-hover:border-teal-300 transition-colors">{{ c.motivoConsulta }}</div>
+
+          <!-- FOOTER TARJETA -->
+          <div class="mt-3 flex flex-col gap-2">
+
+            <!-- Fila 1: Signos y Mapa -->
+            <div class="flex gap-2 flex-wrap items-center">
+              @if (c.signosVitales) {
+                @if(c.signosVitales.presionArterial) {
+                  <span class="text-[9px] bg-white/60 px-1.5 py-0.5 rounded text-slate-500 font-mono border border-slate-200">PA:{{ c.signosVitales.presionArterial }}</span>
+                }
+                @if(c.signosVitales.peso) {
+                  <span class="text-[9px] bg-white/60 px-1.5 py-0.5 rounded text-slate-500 font-mono border border-slate-200">{{ c.signosVitales.peso }}kg</span>
+                }
+              }
+
+              @if (c.mapaCorporal && c.mapaCorporal.length > 0) {
+                <button (click)="verMapa.emit(c.mapaCorporal); $event.stopPropagation()"
+                        class="ml-auto flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 text-[10px] font-bold hover:bg-indigo-100 transition-colors"
+                        title="Ver zonas de dolor">
+                  <fa-icon [icon]="icons.cuerpo"></fa-icon> Mapa
+                </button>
+              }
+            </div>
+
+            <!-- ✅ FILA 2: ARCHIVOS ADJUNTOS (NUEVO) -->
+            @if (c.archivosAdjuntos && c.archivosAdjuntos.length > 0) {
+              <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100/50">
+                @for (adj of c.archivosAdjuntos; track $index) {
+                  <a [href]="adj.url" target="_blank" (click)="$event.stopPropagation()"
+                     class="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-colors border shadow-sm hover:scale-105"
+                     [ngClass]="adj.tipo === 'PDF' ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100' : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100'">
+
+                    <fa-icon [icon]="adj.tipo === 'PDF' ? icons.pdf : icons.img"></fa-icon>
+                    <span class="truncate max-w-[80px]">{{ adj.nombre }}</span>
+                  </a>
+                }
+              </div>
+            }
+
+          </div>
+        </div>
+      }
+
+      @if (historial.length === 0) {
+        <div class="p-10 text-center text-slate-400/60 text-xs font-medium flex flex-col items-center gap-2 mt-10">
+          <fa-icon [icon]="icons.file" class="text-3xl opacity-50"></fa-icon>
+          <p>No hay historial previo.</p>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

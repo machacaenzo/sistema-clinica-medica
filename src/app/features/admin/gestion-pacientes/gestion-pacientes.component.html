@@ -1,0 +1,221 @@
+<div class="w-full h-full p-4 flex flex-col">
+  <div class="content-card animate-fade-in">
+
+    <!-- TOOLBAR -->
+    <div class="filters-area">
+      <div class="w-full md:w-auto">
+        <h2 class="text-2xl font-bold text-slate-800 drop-shadow-sm">Pacientes</h2>
+        <p class="text-slate-600 font-medium text-sm">Fichas médicas y afiliaciones</p>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+        <div class="relative w-full md:w-64">
+          <fa-icon [icon]="icons.faSearch" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 z-10"></fa-icon>
+          <input type="text" placeholder="Nombre, DNI o Email..." class="search-glass" (input)="onSearch($event)">
+        </div>
+
+        <div class="flex items-center gap-3 bg-white/20 p-2 rounded-2xl backdrop-blur-md border border-white/30">
+          <label class="flex items-center gap-2 cursor-pointer select-none px-2">
+            <span class="text-xs font-bold text-slate-600 uppercase">Incompletos</span>
+            <input type="checkbox" (change)="toggleIncomplete($event)" class="accent-teal-500 w-4 h-4 rounded border-slate-300">
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-section overflow-hidden relative custom-scrollbar">
+      <div class="absolute inset-0 overflow-auto p-4">
+
+        <!-- VISTA DESKTOP -->
+        <div class="hidden md:block">
+          <table class="glass-table w-full table-fixed">
+            <thead class="sticky top-0 z-10">
+              <tr>
+                <th class="pl-6 text-left py-5 w-auto">Paciente</th>
+                <th class="text-left py-5 w-[15%]">DNI</th>
+                <th class="text-left py-5 w-[20%]">Obra Social</th>
+                <th class="text-center py-5 w-[140px]">Estado Ficha</th>
+                <th class="py-4 text-center">Confianza</th>
+                <th class="text-right pr-6 py-5 w-[180px]">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of filteredPacientes(); track p.uid) {
+                <tr class="transition-all duration-200 border-b border-teal-500/30 hover:bg-white/40">
+
+                  <td class="pl-6 py-4 align-middle truncate">
+                    <div class="flex items-center gap-3">
+                      <img [src]="p.foto || p.fotoUsuario || defaultImage"
+                           (error)="handleImageError($event)"
+                           class="w-10 h-10 rounded-full object-cover border-2 border-white/60 shadow-sm bg-white min-w-[2.5rem]">
+                      <div class="truncate">
+                        <div class="font-bold text-slate-800 truncate">{{ p.displayName }}</div>
+                        <div class="text-xs text-slate-500 font-mono truncate">{{ p.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="py-4 align-middle text-left">
+                    @if (p.dni === '---') {
+                      <span class="text-slate-400 font-medium text-xs italic">Sin cargar</span>
+                    } @else {
+                      <span class="font-mono text-slate-700 font-bold">{{ p.dni }}</span>
+                    }
+                  </td>
+
+                  <td class="py-4 align-middle text-left truncate" [title]="p.obraSocial">
+                    <span class="status-badge cursor-help" [ngClass]="p.obraSocial === 'No cargada' ? 'inactivo' : 'activo'">
+                      {{ obtenerSiglas(p.obraSocial) }}
+                    </span>
+                  </td>
+
+                  <td class="text-center py-4 align-middle">
+                    @if (p.perfilCompleto) {
+                      <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-teal-700 bg-teal-100/80 px-2 py-1 rounded-full border border-teal-200/50">
+                        <span>✓</span> Completo
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-orange-700 bg-orange-100/80 px-2 py-1 rounded-full border border-orange-200/50 animate-pulse">
+                        <span>!</span> Incompleto
+                      </span>
+                    }
+                  </td>
+                <!-- ✅ COLUMNA DE CONFIANZA: Usa 'p' porque es la variable del for -->
+    <td class="py-4 text-center">
+      <div class="flex flex-col items-center gap-1">
+        <span class="status-badge" [ngClass]="getClaseReputacion(p.reputacion)">
+          {{ p.reputacion ?? 100 }} pts
+        </span>
+        @if ((p.reputacion ?? 100) < 40) {
+          <span class="text-[8px] font-black text-red-500 uppercase animate-pulse">Bloqueado para Efectivo</span>
+        }
+      </div>
+    </td>
+                  <td class="text-right pr-6 py-4 align-middle">
+                    <div class="flex justify-end gap-2">
+                      <!-- ✅ BOTÓN ASIGNAR TURNO (Corregido) -->
+                      <button (click)="asignarTurno(p)" class="icon-btn turns" title="Asignar Turno">
+                        <fa-icon [icon]="icons.nuevoTurno" class="text-sm"></fa-icon>
+                      </button>
+
+                      <button (click)="verHistoriaClinica(p)" class="icon-btn history" title="Historia Clínica">
+                        <fa-icon [icon]="icons.historia" class="text-sm"></fa-icon>
+                      </button>
+                      <button (click)="openEditModal(p)" class="icon-btn edit" title="Editar Datos">
+                        <fa-icon [icon]="icons.faEdit" class="text-sm"></fa-icon>
+                      </button>
+
+                 <!-- ✅ BOTÓN MULTA: Usa 'p' y el icono 'icons.pago' -->
+        @if ((p.reputacion ?? 100) < 40) {
+          <button (click)="cobrarMultaYRehabilitar(p)"
+                  class="icon-btn bg-white text-orange-600 border border-orange-200 hover:bg-orange-500 hover:text-white"
+                  title="Cobrar Multa y Rehabilitar">
+            <fa-icon [icon]="icons.pago"></fa-icon>
+          </button>
+        }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- VISTA MÓVIL -->
+        <div class="md:hidden flex flex-col gap-3">
+          @for (p of filteredPacientes(); track p.uid) {
+            <div class="bg-white/40 p-4 rounded-2xl border border-white/50 shadow-sm">
+              <div class="flex items-center gap-3 mb-3">
+                <img [src]="p.foto || p.fotoUsuario || defaultImage"
+                     (error)="handleImageError($event)"
+                     class="w-12 h-12 rounded-full border border-white bg-white">
+                <div>
+                  <h3 class="font-bold text-slate-800">{{ p.displayName }}</h3>
+                  <span class="status-badge text-xs mt-1" [ngClass]="p.obraSocial === 'No cargada' ? 'inactivo' : 'activo'">
+                    {{ obtenerSiglas(p.obraSocial) }}
+                  </span>
+                </div>
+                <button (click)="openEditModal(p)" class="icon-btn edit ml-auto"><fa-icon [icon]="icons.faEdit"></fa-icon></button>
+              </div>
+
+              <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-200/50">
+                 <div class="flex gap-3">
+                    <!-- ✅ BOTÓN ASIGNAR TURNO MÓVIL (Corregido) -->
+                    <button (click)="asignarTurno(p)" class="text-blue-500 text-xs font-bold flex items-center gap-1">
+                       <fa-icon [icon]="icons.nuevoTurno"></fa-icon> Turno
+                    </button>
+                    <button (click)="verHistoriaClinica(p)" class="text-purple-500 text-xs font-bold flex items-center gap-1">
+                       <fa-icon [icon]="icons.historia"></fa-icon> HC
+                    </button>
+                 </div>
+
+                 @if (p.dni === '---') {
+                   <span class="text-orange-500 text-xs font-bold">⚠ Faltan datos</span>
+                 }
+              </div>
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EL RESTO DEL MODAL SE MANTIENE IGUAL -->
+@if (isModalOpen()) {
+  <!-- ... contenido del modal ... -->
+  <!-- Solo asegúrate de que el cierre y guardado estén correctos, que ya lo estaban en tu código original -->
+  <!-- Copia el modal del mensaje anterior si necesitas el código completo, pero no cambió -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+        <!-- Header -->
+        <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+            <div><h3 class="font-bold text-xl text-slate-800">Ficha Médica</h3><p class="text-xs text-slate-500">Paciente: <span class="font-bold">{{ selectedPaciente?.displayName }}</span></p></div>
+            <button (click)="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors"><fa-icon [icon]="icons.faTimes" class="text-xl"></fa-icon></button>
+        </div>
+        <!-- Body -->
+        <div class="p-6 overflow-y-auto custom-scrollbar">
+            <form [formGroup]="pacienteForm" (ngSubmit)="saveChanges()">
+                <!-- Grid y campos igual que antes... -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- ... campos ... -->
+                    <!-- Para ahorrar espacio no los repito, usa los del mensaje anterior que estaban bien -->
+                     <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-cyan-600 uppercase border-b border-cyan-100 pb-2">Datos Personales</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1">DNI <span class="text-red-400">*</span></label><input type="text" formControlName="dni" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 outline-none"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 mb-1">Sexo</label><select formControlName="sexo" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option><option value="Otro">Otro</option></select></div>
+                        </div>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1">Fecha de Nacimiento <span class="text-red-400">*</span></label><input type="date" formControlName="fechaNacimiento" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1">Teléfono <span class="text-red-400">*</span></label><input type="tel" formControlName="telefono" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1">Dirección</label><input type="text" formControlName="direccion" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-cyan-600 uppercase border-b border-cyan-100 pb-2">Datos Clínicos</h4>
+                        <div><label class="block text-xs font-bold text-slate-500 mb-1">Obra Social <span class="text-red-400">*</span></label><div class="relative"><select formControlName="obraSocial" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white cursor-pointer"><option value="" disabled selected>Seleccione cobertura</option><option value="Particular">Particular / Privado</option>@for (os of obrasSocialesActivas(); track os.id) {<option [value]="os.nombre">{{ os.nombre }} ({{ os.siglas }})</option>}</select><div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-xs">▼</div></div></div>
+                        <div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-bold text-slate-500 mb-1">Nro. Afiliado</label><input type="text" formControlName="numeroAfiliado" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div><div><label class="block text-xs font-bold text-slate-500 mb-1">Grupo Sanguíneo</label><select formControlName="grupoSanguineo" class="input-field w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">Seleccionar</option><option value="0+">0+</option><option value="0-">0-</option><option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option><option value="AB+">AB+</option><option value="AB-">AB-</option></select></div></div>
+                        <div class="bg-red-50 p-4 rounded-xl border border-red-100 mt-4"><h5 class="text-xs font-bold text-red-500 uppercase mb-3 flex items-center gap-2"><fa-icon [icon]="icons.faUserInjured"></fa-icon> Contacto de Emergencia</h5><div class="grid grid-cols-1 gap-3"><input type="text" formControlName="contactoEmergenciaNombre" placeholder="Nombre completo" class="w-full text-sm border-slate-200 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-200 outline-none"><input type="tel" formControlName="contactoEmergenciaTelefono" placeholder="Teléfono" class="w-full text-sm border-slate-200 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-200 outline-none"></div></div>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="flex justify-end gap-3 mt-8 pt-5 border-t border-slate-100">
+                    <button type="button" (click)="closeModal()" class="px-6 py-2 text-slate-600 hover:bg-slate-100 rounded-full font-medium text-sm transition-colors">Cancelar</button>
+                    <button type="submit" [disabled]="pacienteForm.invalid" class="bg-teal-500 hover:bg-teal-600 text-white px-8 py-2 rounded-full shadow-lg shadow-teal-500/30 font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">Guardar Ficha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+}
+
+<!-- ... al final de todo tu HTML ... -->
+
+@if (mostrarProtocolo()) {
+  <app-protocolo-emergencia
+    [paciente]="pacienteSeleccionado()"
+    (accesoConcedido)="alAutorizarAcceso()"
+    (cancelar)="mostrarProtocolo.set(false)">
+  </app-protocolo-emergencia>
+}

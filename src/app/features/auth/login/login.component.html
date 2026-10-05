@@ -1,0 +1,76 @@
+<main class="auth-page-wrapper">
+
+  <!-- AGREGADO 'relative' PARA POSICIONAR LA X -->
+  <div class="auth-container relative">
+
+    <!-- 1. BOTÓN DE CERRAR / VOLVER AL HOME -->
+    <a routerLink="/public/home"
+       class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-full hover:bg-slate-100"
+       title="Volver al inicio">
+      <fa-icon [icon]="faTimes" class="text-xl"></fa-icon>
+    </a>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+      <div class="auth-header">
+        <h1>¡Bienvenido de Nuevo!</h1>
+      </div>
+
+      <!-- Email -->
+      <div class="input-group">
+        <fa-icon [icon]="faEnvelope" class="input-icon"></fa-icon>
+        <input type="email" class="input-field input-field--icon" placeholder="Correo Electrónico" formControlName="email">
+      </div>
+      <ng-container *ngIf="email?.invalid && (email?.touched || email?.dirty)">
+        <div class="text-red-500 text-xs -mt-3 mb-3 ml-4">
+          <span *ngIf="email?.errors?.['required']">El correo es obligatorio.</span>
+          <span *ngIf="email?.errors?.['email']">Ingresa un correo válido.</span>
+        </div>
+      </ng-container>
+
+      <!-- Contraseña -->
+      <div class="input-group">
+        <fa-icon [icon]="faLock" class="input-icon"></fa-icon>
+        <input [type]="passwordVisible() ? 'text' : 'password'" class="input-field input-field--icon" placeholder="Contraseña" formControlName="password">
+        <button type="button" (click)="togglePasswordVisibility()" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <fa-icon [icon]="passwordVisible() ? faEyeSlash : faEye"></fa-icon>
+        </button>
+      </div>
+      <ng-container *ngIf="password?.invalid && (password?.touched || password?.dirty)">
+        <div class="text-red-500 text-xs -mt-3 mb-3 ml-4">
+          <span *ngIf="password?.errors?.['required']">La contraseña es obligatoria.</span>
+        </div>
+      </ng-container>
+
+      <!-- 2. LINK CORREGIDO: OLVIDASTE CONTRASEÑA -->
+      <div class="text-right mb-6 -mt-3">
+        <a routerLink="/auth/forgot-password" class="text-sm text-cyan-600 hover:underline">
+          ¿Olvidaste tu contraseña?
+        </a>
+      </div>
+
+      <!-- Grupo de Botones -->
+      <div class="button-group">
+        <button class="btn--primary" type="submit" [disabled]="isSubmitting()">
+          <ng-container *ngIf="isSubmitting(); else notSubmitting">
+            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          </ng-container>
+          <ng-template #notSubmitting>
+            <span>Iniciar Sesión</span>
+          </ng-template>
+        </button>
+
+        <button type="button" class="btn--google" (click)="loginWithGoogle()">
+          <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
+          <span>Continuar</span>
+        </button>
+      </div>
+
+      <!-- 3. LINK CORREGIDO: REGISTRO -->
+      <p class="auth-link">
+        ¿No tienes cuenta? <a routerLink="/auth/register">Regístrate aquí</a>
+      </p>
+
+    </form>
+  </div>
+</main>

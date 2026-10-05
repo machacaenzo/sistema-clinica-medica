@@ -1,0 +1,109 @@
+<div class="min-h-screen bg-slate-50 pb-20">
+
+  <!-- HEADER & BUSCADOR (Igual) -->
+  <section class="bg-slate-900 text-white pt-32 pb-20 px-4 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500 rounded-full opacity-10 blur-[100px] translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-600 rounded-full opacity-10 blur-[80px] -translate-x-1/2 translate-y-1/2"></div>
+
+    <div class="max-w-6xl mx-auto relative z-10 text-center">
+      <span class="text-teal-400 font-bold uppercase tracking-widest text-xs mb-2 block">Cuidado Humano y Profesional</span>
+      <h1 class="text-4xl md:text-5xl font-black mb-6">Nuestros Profesionales</h1>
+
+      <div class="max-w-xl mx-auto relative group animate-slide-up">
+        <fa-icon [icon]="icons.search" class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors"></fa-icon>
+        <input type="text" [ngModel]="filtro()" (ngModelChange)="filtro.set($event)"
+          placeholder="Buscar médico o especialidad..."
+          class="w-full bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-slate-400 rounded-full py-4 pl-12 pr-6 focus:bg-white/20 focus:border-teal-400 outline-none transition-all shadow-xl">
+      </div>
+    </div>
+  </section>
+
+  <!-- GRILLA DE MÉDICOS -->
+  <section class="px-4 -mt-10 relative z-20">
+    <div class="max-w-6xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (medico of medicosConRating(); track medico.uid) {
+          <div class="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:-translate-y-2 transition-all duration-300 group flex flex-col items-center text-center">
+
+            <!-- Foto y Badge -->
+            <div class="relative mb-6">
+              <div class="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-teal-400 to-indigo-500 shadow-lg">
+                <img [src]="medico.fotoUsuario || 'assets/user-default.jpg'" (error)="handleImageError($event)"
+                     class="w-full h-full rounded-full object-cover border-4 border-white bg-white">
+              </div>
+              <span class="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-black px-4 py-1 rounded-full shadow-md uppercase tracking-wider">
+                {{ medico.especialidades?.[0] || 'Clínica Médica' }}
+              </span>
+            </div>
+
+            <!-- Nombre y Rating -->
+            <h3 class="text-2xl font-black text-slate-800 leading-tight">{{ medico.nombre }}</h3>
+
+            <div class="flex items-center gap-2 mt-2 mb-4">
+              <div class="flex text-amber-400 text-sm">
+                <fa-icon [icon]="icons.star"></fa-icon>
+                <span class="ml-1.5 font-black text-slate-700 text-base">{{ medico.ratingPromedio > 0 ? medico.ratingPromedio : 'Nuevo' }}</span>
+              </div>
+              <span class="text-slate-400 text-xs font-bold uppercase tracking-tighter">({{ medico.cantidadOpiniones }} opiniones)</span>
+            </div>
+
+            <!-- Botones -->
+            <div class="w-full flex flex-col gap-2">
+              <a [routerLink]="['/public/solicitar-turno']" [queryParams]="{ medico: medico.uid }"
+                 class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-teal-600 transition-all shadow-lg active:scale-95 uppercase text-xs tracking-widest">
+                 Reservar Cita
+              </a>
+
+              <button (click)="verOpiniones(medico)"
+                      class="w-full bg-slate-50 text-slate-500 font-bold py-3 rounded-2xl hover:bg-white hover:text-indigo-600 transition-all border border-slate-100 text-xs uppercase tracking-widest">
+                Ver Opiniones
+              </button>
+            </div>
+
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL DE OPINIONES (NIVEL DIOS DE PRIVACIDAD) -->
+  @if (medicoParaOpiniones()) {
+    <div class="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xl animate-fade-in" (click)="medicoParaOpiniones.set(null)">
+      <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-white/20 flex flex-col animate-slide-up" (click)="$event.stopPropagation()">
+
+        <div class="p-8 border-b border-slate-100 flex justify-between items-center">
+          <div class="flex items-center gap-4 text-left">
+             <div class="w-12 h-12 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center text-xl shadow-inner"><fa-icon [icon]="icons.comentario"></fa-icon></div>
+             <div>
+               <h3 class="font-black text-slate-800 text-xl leading-none">Opiniones</h3>
+               <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest mt-1">Dr. {{ medicoParaOpiniones().nombre }}</p>
+             </div>
+          </div>
+          <button (click)="medicoParaOpiniones.set(null)" class="text-slate-300 hover:text-red-500"><fa-icon [icon]="icons.close" class="text-2xl"></fa-icon></button>
+        </div>
+
+        <div class="p-8 overflow-y-auto max-h-[50vh] space-y-6 custom-scrollbar">
+          @for (op of medicoParaOpiniones().opiniones; track $index) {
+            <div class="border-b border-slate-100 pb-4 last:border-0">
+               <div class="flex justify-between items-center mb-2">
+                 <div class="flex text-amber-400 text-xs gap-0.5">
+                   @for (s of [1,2,3,4,5]; track s) { <fa-icon [icon]="icons.star" [class.opacity-20]="s > op.puntos"></fa-icon> }
+                 </div>
+                 <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Paciente Anónimo</span>
+               </div>
+               <p class="text-sm text-slate-600 italic leading-relaxed">"{{ op.comentario }}"</p>
+               <p class="text-[9px] text-slate-400 mt-2 font-mono uppercase tracking-tighter">{{ op.fecha.toDate() | date:'MMMM yyyy':'':'es' }}</p>
+            </div>
+          } @empty {
+            <div class="text-center py-10 text-slate-400 opacity-50 uppercase font-black text-xs tracking-widest">Aún no hay reseñas registradas</div>
+          }
+        </div>
+
+        <div class="p-6 bg-slate-50 text-center">
+           <button (click)="medicoParaOpiniones.set(null)" class="bg-white text-slate-800 px-8 py-3 rounded-2xl font-black text-xs shadow-md border border-slate-200 uppercase tracking-widest">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

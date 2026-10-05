@@ -1,0 +1,78 @@
+<main class="auth-page-wrapper">
+
+  <!-- AGREGADO 'relative' PARA POSICIONAMIENTO -->
+  <div class="auth-container relative">
+
+    <!-- 1. BOTÓN DE CERRAR / VOLVER AL HOME -->
+    <a routerLink="/public/home"
+       class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-full hover:bg-slate-100"
+       title="Volver al inicio">
+      <fa-icon [icon]="faTimes" class="text-xl"></fa-icon>
+    </a>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+      <div class="auth-header">
+        <h1>Crear una Cuenta</h1>
+        <p>Regístrate para empezar a gestionar tu salud.</p>
+      </div>
+
+      <!-- Nombre Completo -->
+      <div class="input-group">
+        <fa-icon [icon]="faUser" class="input-icon"></fa-icon>
+        <input type="text" class="input-field input-field--icon" placeholder="Nombre Completo" formControlName="nombreCompleto">
+      </div>
+      <ng-container *ngIf="nombreCompleto?.invalid && (nombreCompleto?.touched || nombreCompleto?.dirty)">
+        <div class="text-red-500 text-xs -mt-3 mb-3 ml-4">
+          <span *ngIf="nombreCompleto?.errors?.['required']">El nombre es obligatorio.</span>
+          <span *ngIf="nombreCompleto?.errors?.['minlength']">Debe tener al menos 3 caracteres.</span>
+        </div>
+      </ng-container>
+
+      <!-- Email -->
+      <div class="input-group">
+        <fa-icon [icon]="faEnvelope" class="input-icon"></fa-icon>
+        <input type="email" class="input-field input-field--icon" placeholder="Correo Electrónico" formControlName="email">
+      </div>
+      <ng-container *ngIf="email?.invalid && (email?.touched || email?.dirty)">
+        <div class="text-red-500 text-xs -mt-3 mb-3 ml-4">
+          <span *ngIf="email?.errors?.['required']">El correo es obligatorio.</span>
+          <span *ngIf="email?.errors?.['email']">Ingresa un correo válido.</span>
+        </div>
+      </ng-container>
+
+      <!-- Contraseña -->
+      <div class="input-group">
+        <fa-icon [icon]="faLock" class="input-icon"></fa-icon>
+        <input [type]="passwordVisible() ? 'text' : 'password'" class="input-field input-field--icon" placeholder="Contraseña" formControlName="password">
+        <button type="button" (click)="togglePasswordVisibility()" class="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <fa-icon [icon]="passwordVisible() ? faEyeSlash : faEye"></fa-icon>
+        </button>
+      </div>
+      <ng-container *ngIf="password?.invalid && (password?.touched || password?.dirty)">
+        <div class="text-red-500 text-xs -mt-3 mb-3 ml-4">
+          <span *ngIf="password?.errors?.['required']">La contraseña es obligatoria.</span>
+          <span *ngIf="password?.errors?.['minlength']">Debe tener al menos 6 caracteres.</span>
+        </div>
+      </ng-container>
+
+      <!-- Botón de Submit -->
+      <button class="btn--primary mt-8" type="submit" [disabled]="isSubmitting()">
+        <ng-container *ngIf="isSubmitting(); else notSubmitting">
+          <!-- Spinner SVG -->
+          <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Creando cuenta...</span>
+        </ng-container>
+        <ng-template #notSubmitting>
+          <span>Crear Cuenta</span>
+        </ng-template>
+      </button>
+
+      <!-- 2. LINK CORREGIDO: REDIRIGE A /auth/login -->
+      <p class="auth-link">
+        ¿Ya tienes una cuenta? <a routerLink="/auth/login">Inicia sesión aquí</a>
+      </p>
+
+    </form>
+  </div>
+</main>

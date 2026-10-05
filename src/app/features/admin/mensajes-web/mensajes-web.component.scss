@@ -1,0 +1,14 @@
+// Importamos tu tema global para asegurar consistencia
+@import '../_admin-theme.scss';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Pequeño ajuste para el botón de borrar al hacer hover en la fila
+.group:hover {
+  .opacity-0 {
+    opacity: 1;
+  }
+}

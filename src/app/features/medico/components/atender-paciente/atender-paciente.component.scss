@@ -1,0 +1,48 @@
+// Importamos el tema global del admin
+@import '../../../admin/_admin-theme.scss';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Estilos específicos para este componente
+
+// Labels pequeños para inputs de formulario
+.label-main {
+  @apply block text-xs font-bold text-slate-500 uppercase mb-1.5 ml-1;
+}
+
+// Labels ultra pequeños para signos vitales
+.label-mini {
+  @apply block text-[10px] font-bold text-slate-400 uppercase mb-1 text-center;
+}
+
+// Inputs compactos para números (Peso, Talla, etc)
+.input-mini {
+  @apply w-full text-center font-bold text-slate-700 bg-white/70 border border-slate-200 rounded-lg py-2 text-sm outline-none transition-all;
+
+  &:focus {
+    @apply bg-white border-teal-400 ring-2 ring-teal-400/20;
+  }
+}
+
+// Sobrescribimos el textarea para que tenga un fondo un poco más sólido para leer mejor
+textarea.input-field {
+  @apply bg-white/60;
+  &:focus { @apply bg-white; }
+}
+
+// Ajuste responsive para pantallas muy chicas (fallback a flex column)
+@media (max-width: 1024px) {
+  .grid-cols-12 {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  aside, main {
+    width: 100%;
+    min-height: 400px;
+  }
+}

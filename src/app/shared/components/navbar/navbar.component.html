@@ -1,0 +1,158 @@
+<!-- NAV PRINCIPAL -->
+<nav class="fixed top-0 left-0 w-full z-[100] transition-all">
+
+  <!-- 1. BARRA SUPERIOR (Siempre visible y por encima de todo) -->
+  <div class="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm relative z-[130] flex items-center">
+    <div class="container mx-auto px-4 flex justify-between items-center">
+
+      <!-- LOGO Y NOMBRE -->
+      <a routerLink="/public/home" (click)="closeAll()" class="flex items-center gap-3 shrink-0">
+        @if (clinicaInfo()?.logo) {
+          <img [src]="clinicaInfo()?.logo" class="w-9 h-9 rounded-xl object-cover border border-slate-100 shadow-sm">
+        } @else {
+          <div class="w-9 h-9 bg-teal-600 rounded-xl flex items-center justify-center text-white font-black text-xs">H</div>
+        }
+        <span class="text-sm md:text-lg font-black text-slate-800 tracking-tighter uppercase truncate max-w-[120px] md:max-w-none">
+          {{ clinicaInfo()?.nombre }}
+        </span>
+      </a>
+
+      <!-- MENÚ ESCRITORIO (LG+) -->
+      <div class="hidden lg:flex items-center gap-6">
+        <ul class="flex items-center gap-1 text-sm font-bold text-slate-500">
+          <li><a routerLink="/public/home" (click)="closeAll()" routerLinkActive="text-teal-600" class="px-4 py-2 rounded-full hover:bg-slate-50 transition-all">Inicio</a></li>
+          <li class="relative">
+            <button (click)="toggleInstitucional()" class="px-4 py-2 rounded-full hover:bg-slate-50 flex items-center gap-1 transition-all">
+              Institucional <fa-icon [icon]="icons.chevron" class="text-[10px] opacity-50"></fa-icon>
+            </button>
+            @if (isInstitucionalOpen()) {
+              <div class="absolute top-full left-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 animate-fade-in z-50">
+                <a routerLink="/public/nosotros" (click)="closeAll()" class="dropdown-item"><fa-icon [icon]="icons.building" class="mr-2 text-teal-500 w-4"></fa-icon> Nosotros</a>
+                <a routerLink="/public/staff" (click)="closeAll()" class="dropdown-item"><fa-icon [icon]="icons.staff" class="mr-2 text-teal-500 w-4"></fa-icon> Staff Médico</a>
+                <a routerLink="/public/obras-sociales" (click)="closeAll()" class="dropdown-item"><fa-icon [icon]="icons.os" class="mr-2 text-teal-500 w-4"></fa-icon> Obras Sociales</a>
+              </div>
+            }
+          </li>
+          <li><a routerLink="/public/contacto" (click)="closeAll()" routerLinkActive="text-teal-600" class="px-4 py-2 rounded-full hover:bg-slate-50 transition-all">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- ACCIONES DERECHA -->
+      <div class="flex items-center gap-2">
+        <!-- BOTÓN TURNO -->
+        <a routerLink="/public/solicitar-turno" (click)="closeAll()"
+           class="bg-slate-900 text-white hover:bg-teal-600 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg transition-all flex items-center gap-2 active:scale-95 shrink-0">
+           <fa-icon [icon]="icons.addTurno"></fa-icon> <span>TURNO</span>
+        </a>
+        <app-notificaciones-badge></app-notificaciones-badge>
+        <!-- PERFIL PC -->
+        <div class="hidden lg:block">
+          @if (authService.currentUser()) {
+            <div class="relative ml-2 border-l border-slate-200 pl-4">
+              <button (click)="toggleProfile()" class="flex items-center gap-2 p-1 pr-3 rounded-full bg-slate-50 hover:bg-white border border-slate-200 transition-all group">
+                <img [src]="authService.currentUser()?.fotoURL || 'assets/user-default.jpg'" class="w-8 h-8 rounded-full object-cover shadow-sm">
+                <div class="text-left">
+                  <p class="text-[9px] font-black text-slate-400 leading-none">MI CUENTA</p>
+                  <p class="text-xs font-bold text-slate-700 truncate max-w-[80px]">{{ authService.currentUser()?.displayName?.split(' ')?.[0] }}</p>
+                </div>
+              </button>
+              @if (isProfileDropdownOpen()) {
+                <div class="absolute top-full right-0 mt-2 w-60 bg-white rounded-3xl shadow-2xl border border-slate-100 p-2 animate-fade-in z-50 flex flex-col gap-1">
+                  <div class="px-4 py-3 border-b border-slate-50 mb-1">
+                    <p class="text-[10px] font-black text-teal-600 uppercase tracking-widest">Panel del Paciente</p>
+                  </div>
+                  <a routerLink="/public/mi-perfil" (click)="closeAll()" class="dropdown-item"><fa-icon [icon]="icons.user" class="mr-2 text-slate-400 w-4"></fa-icon> Mi perfil</a>
+                  <a routerLink="/public/mis-turnos" (click)="closeAll()" class="dropdown-item"><fa-icon [icon]="icons.misTurnos" class="mr-2 text-indigo-500 w-4"></fa-icon> Mis turnos</a>
+                  <a routerLink="/public/mi-historial" (click)="closeAll()" class="dropdown-item"><fa-icon [icon]="icons.historial" class="mr-2 text-teal-500 w-4"></fa-icon> Mi Historial</a>
+
+                  <!-- ✅ CORREGIDO: Sintaxis @if de Angular 19 -->
+                  @if (mostrarMediciones()) {
+                    <a routerLink="/public/mis-mediciones" (click)="closeAll()" class="dropdown-item animate-fade-in">
+                      <fa-icon [icon]="icons.presion" class="mr-2 text-rose-500 w-4"></fa-icon> Mis Mediciones
+                    </a>
+                  }
+
+                  <div class="h-px bg-slate-100 my-1"></div>
+                  <button (click)="logout()" class="dropdown-item text-red-500"><fa-icon [icon]="icons.logout" class="mr-2 w-4"></fa-icon> Salir</button>
+                </div>
+              }
+            </div>
+          } @else {
+            <!-- ✅ AGREGADO: Botón Registrarse para PC -->
+            <div class="flex items-center gap-3 ml-2 border-l border-slate-200 pl-4">
+              <a routerLink="/auth/login" class="text-xs font-bold text-slate-500 hover:text-teal-600 transition-colors">Entrar</a>
+              <a routerLink="/auth/register" class="bg-teal-50 text-teal-700 px-4 py-2 rounded-full text-xs font-black border border-teal-100 hover:bg-teal-600 hover:text-white transition-all shadow-sm">Unirme</a>
+            </div>
+          }
+        </div>
+
+        <!-- 🍔 BOTÓN HAMBURGUESA / X (Solo móvil) -->
+        <button class="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center text-slate-800 bg-slate-100 active:bg-slate-200 transition-all ml-1"
+                (click)="toggleMenu()">
+          <fa-icon [icon]="isMenuCollapsed() ? icons.menu : icons.close" class="text-xl"></fa-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 2. 📱 MENÚ MÓVIL (PANTALLA COMPLETA - ABAJO DEL HEADER) -->
+  <!-- ============================================ -->
+  @if (!isMenuCollapsed()) {
+    <div class="lg:hidden fixed inset-0 z-[120] bg-white flex flex-col p-6 pt-20 animate-fade-in overflow-y-auto pb-12">
+
+      <!-- Navegación -->
+      <div class="flex flex-col gap-1 mb-8">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 px-4">Explorar Clínica</p>
+        <a routerLink="/public/home" (click)="closeAll()" class="mobile-item">Inicio</a>
+        <a routerLink="/public/staff" (click)="closeAll()" class="mobile-item">Staff Médico</a>
+        <a routerLink="/public/obras-sociales" (click)="closeAll()" class="mobile-item border-none">Obras Sociales</a>
+      </div>
+
+      <app-notificaciones-badge></app-notificaciones-badge>
+
+      <!-- Usuario Móvil -->
+      <div class="mt-auto">
+        @if (authService.currentUser()) {
+          <div class="bg-slate-50 rounded-[2.5rem] p-6 border border-slate-200 shadow-inner">
+             <div class="flex items-center gap-4 mb-6">
+                <img [src]="authService.currentUser()?.fotoURL || 'assets/user-default.jpg'" class="w-14 h-14 rounded-2xl object-cover border-4 border-white shadow-md">
+                <h4 class="text-xl font-black text-slate-800 truncate">{{ authService.currentUser()?.displayName }}</h4>
+             </div>
+             <!-- Grilla con Iconos -->
+             <div class="grid grid-cols-2 gap-3">
+                <a routerLink="/public/mi-perfil" (click)="closeAll()" class="mobile-btn">
+                  <fa-icon [icon]="icons.user" class="text-slate-400"></fa-icon> Perfil
+                </a>
+                <a routerLink="/public/mis-turnos" (click)="closeAll()" class="mobile-btn">
+                  <fa-icon [icon]="icons.misTurnos" class="text-indigo-500"></fa-icon> Turnos
+                </a>
+                <a routerLink="/public/mi-historial" (click)="closeAll()" class="mobile-btn">
+                  <fa-icon [icon]="icons.historial" class="text-teal-500"></fa-icon> Historial
+                </a>
+
+                @if (mostrarMediciones()) {
+                  <a routerLink="/public/mis-mediciones" (click)="closeAll()" class="mobile-btn">
+                    <fa-icon [icon]="icons.presion" class="text-rose-500"></fa-icon> Medidas
+                  </a>
+                }
+
+                <button (click)="logout(); closeAll()" class="mobile-btn !text-red-500 col-span-2 mt-2">
+                   <fa-icon [icon]="icons.logout"></fa-icon> Salir
+                </button>
+             </div>
+          </div>
+        } @else {
+          <div class="flex flex-col gap-3">
+             <a routerLink="/auth/login" (click)="closeAll()" class="w-full py-4 rounded-2xl bg-slate-900 text-white text-center font-black uppercase tracking-widest shadow-xl">Ingresar</a>
+             <a routerLink="/auth/register" (click)="closeAll()" class="w-full py-4 rounded-2xl border-2 border-slate-200 text-slate-600 text-center font-bold">Crear Cuenta</a>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+</nav>
+
+<!-- Espaciador Global -->
+<div class="h-16 shrink-0"></div>

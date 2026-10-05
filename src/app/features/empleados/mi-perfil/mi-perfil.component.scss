@@ -1,0 +1,13 @@
+@import '../../../features/admin/_admin-theme.scss';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Opcional: Ajuste fino para el efecto glass si usas una imagen de fondo global
+.glass-card {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}

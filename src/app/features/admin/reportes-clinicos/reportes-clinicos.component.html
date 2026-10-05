@@ -1,0 +1,60 @@
+<div class="w-full h-full p-6 flex flex-col gap-6 animate-fade-in bg-slate-50/50">
+
+  <div class="flex justify-between items-center shrink-0">
+    <div>
+      <h2 class="text-3xl font-black text-slate-800 tracking-tight">Análisis Epidemiológico</h2>
+      <p class="text-slate-500 font-medium text-sm">Estadísticas de salud poblacional (Datos Anonimizados)</p>
+    </div>
+    <div class="bg-indigo-600 text-white px-4 py-2 rounded-2xl shadow-lg flex items-center gap-2">
+       <fa-icon [icon]="icons.shield"></fa-icon>
+       <span class="text-xs font-bold uppercase tracking-widest">Protocolo HIPAA / Privacidad</span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
+
+    <!-- RANKING DE PATOLOGÍAS -->
+    <div class="glass-panel p-8">
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shadow-sm">
+          <fa-icon [icon]="icons.biohazard"></fa-icon>
+        </div>
+        <h3 class="font-black text-slate-700 uppercase tracking-widest text-sm">Top Patologías Detectadas</h3>
+      </div>
+
+      <div class="h-80 relative">
+        <canvas baseChart
+          [data]="barChartData"
+          [options]="barOptions"
+          [type]="'bar'">
+        </canvas>
+      </div>
+    </div>
+
+    <!-- PIRÁMIDE DE RIESGO POBLACIONAL -->
+    <div class="glass-panel p-8">
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-sm">
+          <fa-icon [icon]="icons.pyramid"></fa-icon>
+        </div>
+        <h3 class="font-black text-slate-700 uppercase tracking-widest text-sm">Distribución de Riesgo (Estilo de Vida)</h3>
+      </div>
+
+      <div class="h-80 relative flex justify-center">
+        <canvas baseChart
+          [data]="pieChartData"
+          [options]="pieOptions"
+          [type]="'doughnut'">
+        </canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Disclaimer Médico -->
+  <div class="p-4 bg-white/50 rounded-2xl border border-white border-dashed text-center">
+    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+      Este reporte utiliza procesamiento de lenguaje natural (NLP) para agrupar diagnósticos de texto libre y códigos CIE-10.
+    </p>
+  </div>
+</div>

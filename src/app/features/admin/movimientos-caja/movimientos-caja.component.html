@@ -1,0 +1,132 @@
+<div class="w-full h-full p-4 flex flex-col">
+  <div class="content-card animate-fade-in flex flex-col h-full">
+
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3 drop-shadow-sm">
+          <fa-icon [icon]="icons.money" class="text-teal-600"></fa-icon>
+          Movimientos de Caja
+        </h2>
+        <p class="text-slate-600 font-medium text-sm">Libro diario de ingresos y egresos</p>
+      </div>
+
+      <!-- TARJETA BALANCE (Resumen rápido) -->
+      <div class="px-6 py-2 rounded-xl border flex flex-col items-end min-w-[150px] bg-white/50 backdrop-blur-sm"
+           [ngClass]="balanceTotal() >= 0 ? 'border-teal-200 text-teal-700' : 'border-red-200 text-red-600'">
+        <span class="text-[10px] font-black uppercase tracking-widest opacity-70">Balance Vista</span>
+        <span class="text-2xl font-black">${{ balanceTotal() | number }}</span>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="flex gap-3 mb-4">
+      <!-- Filtro Tipo -->
+      <div class="relative">
+        <select [ngModel]="filtroTipo()" (ngModelChange)="filtroTipo.set($event)"
+                class="appearance-none bg-white/40 border border-white/60 rounded-xl py-2 pl-4 pr-8 text-xs font-bold text-slate-700 cursor-pointer hover:bg-white/60 transition-all focus:ring-2 focus:ring-teal-400/30">
+          <option value="TODOS">Todos los Mov.</option>
+          <option value="INGRESO">SOLO INGRESOS</option>
+          <option value="EGRESO">SOLO EGRESOS</option>
+        </select>
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-[10px]">▼</div>
+      </div>
+
+      <!-- Buscador -->
+      <div class="relative flex-1 max-w-sm">
+        <fa-icon [icon]="icons.search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10"></fa-icon>
+        <input type="text" placeholder="Buscar por motivo o responsable..." class="search-glass w-full !py-2 !pl-9"
+               [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)">
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="table-section overflow-hidden relative custom-scrollbar flex-1 rounded-3xl bg-white/30 border border-white/40 shadow-inner">
+      <div class="absolute inset-0 overflow-auto p-0">
+
+        <table class="glass-table w-full">
+          <thead class="sticky top-0 z-10 backdrop-blur-md bg-white/60">
+            <tr>
+              <th class="pl-6 py-3 w-[15%]">Fecha</th>
+              <th class="py-3 w-[15%]">Tipo</th>
+              <th class="py-3 w-auto">Motivo / Detalle</th>
+              <th class="py-3 w-[15%]">Responsable</th>
+              <th class="text-right pr-6 py-3 w-[15%]">Monto</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tx of movimientosFiltrados(); track tx.id) {
+              <tr class="transition-all duration-200 border-b border-slate-200/50 hover:bg-white/50">
+
+                <!-- Fecha -->
+                <td class="pl-6 py-3">
+                  <span class="text-xs font-mono text-slate-600 font-bold bg-white/40 px-2 py-1 rounded">
+                    {{ tx.fecha.toDate() | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                </td>
+
+                <!-- Tipo (Badge) -->
+                <td class="py-3">
+                  @switch (tx.tipo) {
+                    @case ('INGRESO') {
+                      <span class="inline-flex items-center gap-1 text-[10px] font-black bg-green-100 text-green-700 px-2 py-1 rounded-lg border border-green-200 uppercase">
+                        <fa-icon [icon]="icons.up"></fa-icon> Ingreso
+                      </span>
+                    }
+                    @case ('EGRESO') {
+                      <span class="inline-flex items-center gap-1 text-[10px] font-black bg-red-100 text-red-700 px-2 py-1 rounded-lg border border-red-200 uppercase">
+                        <fa-icon [icon]="icons.down"></fa-icon> Egreso
+                      </span>
+                    }
+                    @default {
+                      <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded-lg uppercase">
+                        {{ tx.tipo }}
+                      </span>
+                    }
+                  }
+                </td>
+
+                <!-- Motivo -->
+                <td class="py-3">
+                  <p class="text-sm font-bold text-slate-700 truncate max-w-[300px]" [title]="tx.motivo">
+                    {{ tx.motivo }}
+                  </p>
+                  @if (tx.referenciaExterna) {
+                    <p class="text-[10px] text-slate-400 font-mono">Ref: {{ tx.referenciaExterna }}</p>
+                  }
+                </td>
+
+                <!-- Usuario -->
+                <td class="py-3 text-xs font-medium text-slate-600">
+                  {{ tx.usuarioResponsable || 'Sistema' }}
+                </td>
+
+                <!-- Monto -->
+                <td class="text-right pr-6 py-3">
+                  <span class="text-base font-black font-mono tracking-tight"
+                        [ngClass]="{
+                          'text-green-600': tx.tipo === 'INGRESO',
+                          'text-red-500': tx.tipo === 'EGRESO',
+                          'text-slate-400': tx.tipo !== 'INGRESO' && tx.tipo !== 'EGRESO'
+                        }">
+                    {{ tx.tipo === 'EGRESO' ? '-' : '+' }}${{ tx.monto | number }}
+                  </span>
+                </td>
+
+              </tr>
+            }
+            @if (movimientosFiltrados().length === 0) {
+              <tr>
+                <td colspan="5" class="text-center py-20 text-slate-400 italic">
+                  No se encontraron movimientos.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+  </div>
+</div>

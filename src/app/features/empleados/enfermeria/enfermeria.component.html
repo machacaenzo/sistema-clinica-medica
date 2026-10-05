@@ -1,0 +1,189 @@
+<div class="w-full h-full p-4 flex flex-col gap-4 animate-fade-in">
+
+  <!-- 1. HEADER + TITULO -->
+  <div class="glass-panel !h-auto !flex-row justify-between items-center px-6 py-4 shrink-0 z-20">
+    <div class="flex items-center gap-4">
+      <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 shadow-sm border border-teal-200">
+        <fa-icon [icon]="icons.nurse" class="text-xl"></fa-icon>
+      </div>
+      <div>
+        <h1 class="text-xl font-black text-slate-800 tracking-tight">Estación de Enfermería</h1>
+        <p class="text-xs text-slate-500 font-medium">Control previo a la consulta médica</p>
+      </div>
+    </div>
+
+    <div class="hidden md:block text-right">
+      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha</p>
+      <p class="text-sm font-bold text-slate-700">{{ turnosHoy().length > 0 ? turnosHoy()[0].fechaString : 'Hoy' }}</p>
+    </div>
+  </div>
+
+  <!-- 2. GRID PRINCIPAL -->
+  <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
+
+    <!-- COLUMNA 1: EN SALA DE ESPERA -->
+    <div class="glass-panel flex flex-col overflow-hidden relative">
+      <div class="p-4 border-b border-teal-500/10 bg-white/20 backdrop-blur-md flex justify-between items-center">
+        <h3 class="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
+          En Sala de Espera
+        </h3>
+        <span class="bg-white/50 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold border border-white/60">
+          {{ pacientesEnEspera().length }}
+        </span>
+      </div>
+
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3">
+        @for (t of pacientesEnEspera(); track t.id) {
+          <!-- Tarjeta Paciente (Sin línea lateral) -->
+          <div class="group p-4 rounded-2xl border border-white/40 bg-white/30 hover:bg-white/60 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5">
+
+            <div class="flex justify-between items-center">
+              <div>
+                <h4 class="font-bold text-slate-800 text-lg leading-tight">{{ t.pacienteData.nombre }}</h4>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-[10px] font-mono text-slate-500 bg-white/50 px-1.5 rounded border border-white/60">
+                    DNI: {{ t.pacienteData.dni }}
+                  </span>
+                </div>
+                <p class="text-[10px] text-teal-600 font-bold mt-2 uppercase tracking-wide">
+                  Dr. {{ t.medicoData.nombre }}
+                </p>
+              </div>
+
+              <!-- BOTÓN RENOMBRADO -->
+              <button (click)="abrirTriage(t)"
+                      class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl font-bold shadow-lg shadow-teal-500/20 transition-all active:scale-95 flex items-center gap-2 text-xs">
+                <fa-icon [icon]="icons.next"></fa-icon> INICIAR CONTROL
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (pacientesEnEspera().length === 0) {
+          <div class="flex flex-col items-center justify-center h-full text-slate-400/60">
+            <fa-icon [icon]="icons.check" class="text-4xl mb-2 opacity-50"></fa-icon>
+            <p class="text-xs font-bold uppercase tracking-wide">Sala vacía</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- COLUMNA 2: LISTOS -->
+    <div class="glass-panel flex flex-col overflow-hidden border-teal-500/20 bg-teal-50/10">
+      <div class="p-4 border-b border-teal-500/10 bg-white/10 backdrop-blur-md flex justify-between items-center">
+        <h3 class="text-xs font-black text-teal-700 uppercase tracking-widest flex items-center gap-2">
+          <fa-icon [icon]="icons.check" class="text-teal-500"></fa-icon>
+          Listos para Médico
+        </h3>
+        <span class="bg-teal-100/50 text-teal-700 px-2 py-0.5 rounded text-[10px] font-bold border border-teal-200/50">
+          {{ pacientesListos().length }}
+        </span>
+      </div>
+
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
+        @for (t of pacientesListos(); track t.id) {
+          <div class="p-3 rounded-xl bg-white/40 border border-white/50 flex justify-between items-center hover:bg-white/60 transition-colors">
+             <div>
+               <p class="font-bold text-slate-700 text-sm">{{ t.pacienteData.nombre }}</p>
+               <p class="text-[10px] text-slate-500 font-medium">Derivado a: <span class="text-teal-600">{{ t.medicoData.nombre }}</span></p>
+             </div>
+             <div class="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 border border-teal-200 shadow-sm">
+               <fa-icon [icon]="icons.check" class="text-[10px]"></fa-icon>
+             </div>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL CONTROL -->
+@if (isModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-slide-up">
+
+      <!-- Header Modal -->
+      <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-lg text-slate-800">Registrar Signos Vitales</h3>
+          <p class="text-xs text-slate-500 font-medium">Paciente: <span class="text-teal-600 font-bold">{{ turnoSeleccionado?.pacienteData?.nombre }}</span></p>
+        </div>
+      </div>
+
+      <div class="p-8">
+        <form [formGroup]="triageForm" (ngSubmit)="guardarTriage()" class="space-y-6">
+
+          <!-- Peso y Altura -->
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <label class="label-mini text-left ml-1 mb-1 block">Peso (kg) <span class="text-red-400">*</span></label>
+              <div class="relative group">
+                <!-- Icono: pointer-events-none para que el click pase al input -->
+                <fa-icon [icon]="icons.peso" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-teal-500 pointer-events-none"></fa-icon>
+                <!-- Input: !pl-12 para dar mucho espacio al icono -->
+                <input type="number" formControlName="peso" class="input-field !pl-12 font-bold text-slate-700">
+              </div>
+            </div>
+
+            <div>
+              <label class="label-mini text-left ml-1 mb-1 block">Altura (cm) <span class="text-red-400">*</span></label>
+              <div class="relative group">
+                <fa-icon [icon]="icons.altura" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-teal-500 pointer-events-none"></fa-icon>
+                <input type="number" formControlName="altura" class="input-field !pl-12 font-bold text-slate-700">
+              </div>
+            </div>
+          </div>
+
+          <!-- IMC Calculado -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex justify-between items-center">
+             <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">IMC Estimado</span>
+             <div class="text-right">
+                <span class="text-2xl font-black text-slate-800 block leading-none">{{ imcCalculado() }}</span>
+                <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded border"
+                  [ngClass]="{
+                    'bg-orange-50 text-orange-600 border-orange-200': estadoImc() === 'Sobrepeso',
+                    'bg-red-50 text-red-600 border-red-200': estadoImc() === 'Obesidad',
+                    'bg-green-50 text-green-600 border-green-200': estadoImc() === 'Normal',
+                    'bg-blue-50 text-blue-600 border-blue-200': estadoImc() === 'Bajo Peso',
+                    'bg-slate-100 text-slate-400 border-slate-200': !estadoImc()
+                  }">{{ estadoImc() || '-' }}</span>
+             </div>
+          </div>
+
+          <!-- Presión y Temperatura -->
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <label class="label-mini text-left ml-1 mb-1 block">Presión Arterial <span class="text-red-400">*</span></label>
+              <div class="relative group">
+                <fa-icon [icon]="icons.presion" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-teal-500 pointer-events-none"></fa-icon>
+                <input type="text" formControlName="presion" placeholder="120/80" class="input-field !pl-12 font-bold text-slate-700">
+              </div>
+              @if (triageForm.get('presion')?.invalid && triageForm.get('presion')?.touched) {
+                <p class="text-[9px] text-red-500 mt-1 font-bold ml-1">Formato requerido: 120/80</p>
+              }
+            </div>
+
+            <div>
+              <label class="label-mini text-left ml-1 mb-1 block">Temperatura <span class="text-red-400">*</span></label>
+              <div class="relative group">
+                <fa-icon [icon]="icons.temp" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-teal-500 pointer-events-none"></fa-icon>
+                <input type="number" formControlName="temperatura" class="input-field !pl-12 font-bold text-slate-700">
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Modal -->
+          <div class="flex gap-3 pt-6 border-t border-slate-100">
+            <button type="button" (click)="cerrarModal()" class="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors text-sm">Cancelar</button>
+            <button type="submit" [disabled]="triageForm.invalid" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-teal-500/30 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2">
+              <fa-icon [icon]="icons.save"></fa-icon> Guardar y Derivar
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+}

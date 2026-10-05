@@ -1,0 +1,298 @@
+<div class="min-h-screen bg-slate-100 p-4 md:p-8 pb-20">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- HEADER -->
+    <h2 class="text-3xl font-black text-slate-800 mb-8 flex items-center gap-3 animate-fade-in">
+      <fa-icon [icon]="icons.faUser" class="text-indigo-600"></fa-icon> Mi Perfil
+    </h2>
+
+    @if (loading()) {
+      <div class="flex justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    } @else {
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-slide-up">
+
+        <!-- IZQUIERDA: IDENTIDAD -->
+        <div class="space-y-6">
+          <div class="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-200 flex flex-col items-center text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-br from-indigo-500 to-purple-600"></div>
+            <div class="relative mt-12 mb-4 group cursor-pointer">
+              <img [src]="imagePreview()" (error)="handleImageError($event)"
+                   class="w-36 h-36 rounded-full object-cover border-[5px] border-white shadow-lg bg-white relative z-10">
+              <label class="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-white font-bold cursor-pointer backdrop-blur-[2px] z-20">
+                <fa-icon [icon]="icons.faCamera" class="mr-2"></fa-icon> Cambiar
+                <input type="file" class="hidden" (change)="onFileSelected($event)" accept="image/*">
+              </label>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-800">{{ paciente()?.nombreCompleto }}</h3>
+            <p class="text-slate-500 font-medium text-sm">{{ authService.currentUser()?.email }}</p>
+            <div class="mt-4"><span class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100 uppercase tracking-wide">Paciente</span></div>
+          </div>
+
+          <div class="bg-slate-900 rounded-[2rem] p-6 shadow-xl text-white relative overflow-hidden group">
+            <div class="relative z-10">
+              <div class="flex items-center gap-3 mb-2 text-slate-300">
+                <fa-icon [icon]="icons.faWallet"></fa-icon> <span class="text-xs font-bold uppercase">Saldo a Favor</span>
+              </div>
+              <p class="text-4xl font-black mb-6 tracking-tight">${{ saldo() }}</p>
+              <a routerLink="/public/mi-billetera" class="inline-flex items-center gap-2 text-sm font-bold text-indigo-300 hover:text-white transition-colors cursor-pointer">
+                Ver movimientos <fa-icon [icon]="icons.faChevronRight" class="text-xs"></fa-icon>
+              </a>
+            </div>
+          </div>
+
+          <div class="mt-6 w-full animate-fade-in">
+  <button type="button"
+          (click)="mostrarCarnet.set(true)"
+          class="w-full bg-white/40 backdrop-blur-md border border-white/60 p-5 rounded-[2rem] shadow-lg flex items-center justify-between group hover:bg-white hover:-translate-y-1 transition-all">
+
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform">
+        <fa-icon [icon]="icons.blood"></fa-icon> <!-- Podés usar faQrcode si lo tenés -->
+      </div>
+      <div class="text-left">
+        <p class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Seguridad Privada</p>
+        <h4 class="text-sm font-bold text-slate-800">Mi Credencial Digital</h4>
+      </div>
+    </div>
+
+    <fa-icon [icon]="icons.faChevronRight" class="text-slate-300 group-hover:text-indigo-500 transition-colors"></fa-icon>
+  </button>
+</div>
+        </div>
+
+        <!-- DERECHA: FORMULARIO -->
+        <div class="lg:col-span-2">
+          <form [formGroup]="perfilForm" (ngSubmit)="guardarCambios()" class="bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden flex flex-col h-full">
+
+            <!-- HEADER FORM -->
+            <div class="p-8 pb-0 flex justify-between items-center">
+              <div>
+                <h3 class="text-xl font-bold text-slate-800">Ficha Médica</h3>
+                <p class="text-slate-400 text-xs">Mantén tus datos actualizados.</p>
+              </div>
+              <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 active:scale-95">
+                <fa-icon [icon]="icons.faSave"></fa-icon> Guardar
+              </button>
+            </div>
+
+            <!-- TABS -->
+            <div class="flex px-8 mt-6 border-b border-slate-100 gap-6 overflow-x-auto">
+              <button type="button" (click)="setTab('personal')" class="pb-3 text-sm font-bold transition-all relative" [ngClass]="activeTab() === 'personal' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'">
+                Datos Personales <span *ngIf="activeTab() === 'personal'" class="absolute bottom-0 left-0 w-full h-1 bg-indigo-500 rounded-t-full"></span>
+              </button>
+              <button type="button" (click)="setTab('clinico')" class="pb-3 text-sm font-bold transition-all relative" [ngClass]="activeTab() === 'clinico' ? 'text-teal-600' : 'text-slate-400 hover:text-slate-600'">
+                Ficha Clínica <span *ngIf="activeTab() === 'clinico'" class="absolute bottom-0 left-0 w-full h-1 bg-teal-500 rounded-t-full"></span>
+              </button>
+              <button type="button" (click)="setTab('seguridad')" class="pb-3 text-sm font-bold transition-all relative" [ngClass]="activeTab() === 'seguridad' ? 'text-red-500' : 'text-slate-400 hover:text-slate-600'">
+                Seguridad <span *ngIf="activeTab() === 'seguridad'" class="absolute bottom-0 left-0 w-full h-1 bg-red-500 rounded-t-full"></span>
+              </button>
+            </div>
+
+            <!-- CONTENIDO -->
+            <div class="p-8">
+
+              <!-- TAB 1: PERSONAL (Igual) -->
+              @if (activeTab() === 'personal') {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                  <div class="md:col-span-2">
+                    <label class="label-text">Nombre Completo <span class="text-red-500">*</span></label>
+                    <input type="text" formControlName="nombreCompleto" class="input-with-icon pl-4" [class.border-red-500]="perfilForm.get('nombreCompleto')?.invalid && perfilForm.get('nombreCompleto')?.touched">
+                    @if(perfilForm.get('nombreCompleto')?.invalid && perfilForm.get('nombreCompleto')?.touched) { <span class="error-msg"><fa-icon [icon]="icons.error"></fa-icon> Requerido</span> }
+                  </div>
+                  <div>
+                    <label class="label-text">DNI <span class="text-red-500">*</span></label>
+                    <div class="relative"><fa-icon [icon]="icons.faIdCard" class="icon-absolute"></fa-icon><input type="text" formControlName="dni" class="input-with-icon" [class.border-red-500]="perfilForm.get('dni')?.invalid && perfilForm.get('dni')?.touched"></div>
+                    @if(perfilForm.get('dni')?.invalid && perfilForm.get('dni')?.touched) { <span class="error-msg"><fa-icon [icon]="icons.error"></fa-icon> Requerido</span> }
+                  </div>
+                  <div>
+                    <label class="label-text">Fecha Nacimiento <span class="text-red-500">*</span></label>
+                    <div class="relative"><fa-icon [icon]="icons.faBirthdayCake" class="icon-absolute"></fa-icon><input type="date" formControlName="fechaNacimiento" class="input-with-icon" [class.border-red-500]="perfilForm.get('fechaNacimiento')?.invalid && perfilForm.get('fechaNacimiento')?.touched"></div>
+                    @if(perfilForm.get('fechaNacimiento')?.invalid && perfilForm.get('fechaNacimiento')?.touched) { <span class="error-msg"><fa-icon [icon]="icons.error"></fa-icon> Requerido</span> }
+                  </div>
+                  <div>
+                    <label class="label-text">Sexo <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                      <fa-icon [icon]="icons.gender" class="icon-absolute"></fa-icon>
+                      <select formControlName="sexo" class="input-with-icon bg-white cursor-pointer"><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option><option value="X">No Binario / X</option><option value="Otro">Otro</option></select>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="label-text">Teléfono <span class="text-red-500">*</span></label>
+                    <div class="relative"><fa-icon [icon]="icons.faPhone" class="icon-absolute"></fa-icon><input type="tel" formControlName="telefono" class="input-with-icon" placeholder="Celular" [class.border-red-500]="perfilForm.get('telefono')?.invalid && perfilForm.get('telefono')?.touched"></div>
+                    @if(perfilForm.get('telefono')?.invalid && perfilForm.get('telefono')?.touched) { <span class="error-msg"><fa-icon [icon]="icons.error"></fa-icon> Requerido</span> }
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="label-text">Dirección <span class="text-red-500">*</span></label>
+                    <div class="relative"><fa-icon [icon]="icons.faMapMarkerAlt" class="icon-absolute"></fa-icon><input type="text" formControlName="direccion" class="input-with-icon" placeholder="Calle, Nro, Localidad" [class.border-red-500]="perfilForm.get('direccion')?.invalid && perfilForm.get('direccion')?.touched"></div>
+                    @if(perfilForm.get('direccion')?.invalid && perfilForm.get('direccion')?.touched) { <span class="error-msg"><fa-icon [icon]="icons.error"></fa-icon> Requerido</span> }
+                  </div>
+                </div>
+              }
+
+              <!-- TAB 2: CLÍNICO (REFACTORIZADO NIVEL DIOS) -->
+              @if (activeTab() === 'clinico') {
+                <div class="animate-fade-in space-y-8">
+
+                  <!-- 1. DATOS ADMINISTRATIVOS -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label class="label-text">Obra Social <span class="text-red-500">*</span></label>
+                      <div class="relative">
+                        <select formControlName="obraSocial" class="input-with-icon appearance-none cursor-pointer" [class.border-red-500]="perfilForm.get('obraSocial')?.invalid && perfilForm.get('obraSocial')?.touched">
+                          <option value="" disabled>Seleccione</option>
+                          @for (os of obrasSociales(); track os.id) {
+                            <option [value]="os.nombre">{{ os.nombre }}</option>
+                          }
+                          <option value="Particular">Particular</option>
+                        </select>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">▼</div>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="label-text">Nro. Afiliado</label>
+                      <input type="text" formControlName="numeroAfiliado" class="input-with-icon pl-4" placeholder="Opcional">
+                    </div>
+                  </div>
+
+                  <!-- 2. ANTECEDENTES PATOLÓGICOS (SOLO LECTURA) -->
+                  <div class="p-6 bg-slate-50 rounded-3xl border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                      <p class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                         <fa-icon [icon]="icons.health"></fa-icon> Antecedentes Médicos
+                      </p>
+                      <span class="text-[9px] bg-slate-200 px-2 py-0.5 rounded text-slate-500 font-bold uppercase tracking-tighter">Validado por Profesional</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <!-- Diabetes -->
+                      <div class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 opacity-70">
+                         <input type="checkbox" formControlName="anteDiabetes" onclick="return false;" class="w-4 h-4 text-teal-500 rounded border-slate-300 focus:ring-0">
+                         <span class="text-sm font-bold text-slate-600">Diabetes</span>
+                      </div>
+                      <!-- Hipertensión -->
+                      <div class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 opacity-70">
+                         <input type="checkbox" formControlName="anteHipertension" onclick="return false;" class="w-4 h-4 text-teal-500 rounded border-slate-300 focus:ring-0">
+                         <span class="text-sm font-bold text-slate-600">Hipertensión</span>
+                      </div>
+                      <!-- Asma -->
+                      <div class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 opacity-70">
+                         <input type="checkbox" formControlName="anteAsma" onclick="return false;" class="w-4 h-4 text-teal-500 rounded border-slate-300 focus:ring-0">
+                         <span class="text-sm font-bold text-slate-600">Asma / EPOC</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 3. EVALUACIÓN DE ESTILO DE VIDA (EL NUEVO COMPONENTE) -->
+                  <div class="py-4">
+                    <app-test-habitos></app-test-habitos>
+                  </div>
+
+                  <!-- 4. HISTORIA NARRATIVA (CAMPOS DE TEXTO) -->
+                  <div class="space-y-4 pt-4 border-t border-slate-100">
+                    <div>
+                      <label class="label-text flex items-center gap-2">
+                        <fa-icon [icon]="icons.history" class="text-teal-500"></fa-icon> Antecedentes Familiares Relevantes
+                      </label>
+                      <textarea formControlName="historiaFamiliar" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all resize-none" placeholder="Ej: Padre con enfermedad cardíaca, madre con hipotiroidismo..."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="label-text flex items-center gap-2">
+                          <fa-icon [icon]="icons.surgery" class="text-teal-500"></fa-icon> Cirugías Previas
+                        </label>
+                        <textarea formControlName="cirugiasPrevias" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all resize-none" placeholder="Cirugías y fechas aproximadas..."></textarea>
+                      </div>
+                      <div>
+                        <label class="label-text flex items-center gap-2">
+                          <fa-icon [icon]="icons.pills" class="text-teal-500"></fa-icon> Medicación Habitual
+                        </label>
+                        <textarea formControlName="medicacionHabitual" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition-all resize-none" placeholder="Medicamentos que toma por su cuenta..."></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 5. ALERGIAS (CHIPS) -->
+                  <div class="pt-4">
+                    <label class="label-text mb-2 block">Alergias Conocidas</label>
+                    <div class="w-full bg-white border border-slate-200 rounded-2xl p-3 flex flex-wrap gap-2 focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all min-h-[50px]">
+                      @for (alergia of alergiasList(); track alergia) {
+                        <span class="bg-red-50 text-red-600 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 border border-red-100 shadow-sm animate-fade-in">
+                          {{ alergia }}
+                          <button type="button" (click)="removerAlergia(alergia)" class="hover:text-red-800 transition-colors">
+                            <fa-icon [icon]="icons.times"></fa-icon>
+                          </button>
+                        </span>
+                      }
+                      <input type="text" (keydown.enter)="$event.preventDefault(); agregarAlergia($event)" placeholder="+ Escribe una alergia y presiona Enter" class="flex-1 bg-transparent border-none outline-none text-sm p-1 min-w-[200px]">
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2 ml-1">* Ejemplo: Penicilina, Dipirona, Yodo, Polen, etc.</p>
+                  </div>
+
+                </div>
+              }
+
+              <!-- TAB 3: SEGURIDAD (Igual) -->
+              @if (activeTab() === 'seguridad') {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                  <div>
+                    <label class="label-text text-red-400">Grupo Sanguíneo <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                      <fa-icon [icon]="icons.blood" class="icon-absolute text-red-300"></fa-icon>
+                      <select formControlName="grupoSanguineo" class="input-with-icon border-red-100 focus:border-red-400 focus:ring-red-100 bg-white cursor-pointer" [class.border-red-500]="perfilForm.get('grupoSanguineo')?.invalid && perfilForm.get('grupoSanguineo')?.touched"><option value="" disabled>Seleccione</option><option value="0+">0+</option> <option value="0-">0-</option><option value="A+">A+</option> <option value="A-">A-</option><option value="B+">B+</option> <option value="B-">B-</option><option value="AB+">AB+</option> <option value="AB-">AB-</option></select>
+                    </div>
+                    @if(perfilForm.get('grupoSanguineo')?.invalid && perfilForm.get('grupoSanguineo')?.touched) { <span class="error-msg text-red-600"><fa-icon [icon]="icons.error"></fa-icon> Requerido</span> }
+                  </div>
+                  <div class="md:col-span-2 bg-red-50 p-4 rounded-xl border border-red-100 mt-2">
+                    <h5 class="text-sm font-bold text-red-600 flex items-center gap-2 mb-4"><fa-icon [icon]="icons.emergency"></fa-icon> Contacto de Emergencia</h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="label-text text-red-800/60">Nombre Contacto <span class="text-red-500">*</span></label><input type="text" formControlName="emergenciaNombre" class="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-200 outline-none bg-white" [class.border-red-400]="perfilForm.get('emergenciaNombre')?.invalid && perfilForm.get('emergenciaNombre')?.touched"></div>
+                        <div><label class="label-text text-red-800/60">Teléfono <span class="text-red-500">*</span></label><input type="tel" formControlName="emergenciaTelefono" class="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-200 outline-none bg-white" [class.border-red-400]="perfilForm.get('emergenciaTelefono')?.invalid && perfilForm.get('emergenciaTelefono')?.touched"></div>
+                        <div class="md:col-span-2"><label class="label-text text-red-800/60">Relación</label><input type="text" formControlName="emergenciaRelacion" class="w-full border border-red-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-200 outline-none bg-white" placeholder="Ej: Padre"></div>
+                    </div>
+                  </div>
+                </div>
+              }
+
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- ✅ MODAL DEL CARNET DIGITAL (REPARADO Y FUNCIONAL) -->
+<!-- ========================================================================== -->
+@if (mostrarCarnet()) {
+  <!-- 1. El Fondo (Backdrop) ahora tiene el evento para cerrar al hacer clic afuera -->
+  <div (click)="mostrarCarnet.set(false)"
+       class="fixed inset-0 z-[150] flex flex-col items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fade-in cursor-pointer">
+
+    <!-- 2. Contenedor de la tarjeta: Usamos $event.stopPropagation() para que
+            al tocar la tarjeta NO se cierre el modal accidentalmente -->
+    <div (click)="$event.stopPropagation()" class="relative w-full max-w-sm cursor-default">
+
+      <!-- 3. Botón cerrar "X" más visible y moderno -->
+      <button (click)="mostrarCarnet.set(false)"
+              class="absolute -top-12 right-0 md:-right-12 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all group">
+        <fa-icon [icon]="icons.times" class="group-hover:scale-125 transition-transform"></fa-icon>
+      </button>
+
+      <!-- El componente del carnet -->
+      <app-carnet-digital></app-carnet-digital>
+
+      <!-- 4. Texto de ayuda debajo de la tarjeta -->
+      <p class="text-center text-white/40 text-[10px] font-bold uppercase tracking-widest mt-6">
+        Toca fuera de la tarjeta para volver
+      </p>
+    </div>
+
+  </div>
+}

@@ -1,0 +1,32 @@
+@import '../admin-theme';
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+// Contenedores de los gráficos
+.glass-panel {
+  @apply transition-all duration-500 hover:shadow-indigo-500/10;
+
+  // Para que el canvas de Chart.js se ajuste bien
+  canvas {
+    max-height: 100%;
+    width: 100% !important;
+  }
+}
+
+// Animación de entrada suave para las tarjetas
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Personalización de la barra lateral de los gráficos
+.h-80 {
+  height: 20rem; // Altura fija para que no se deforme en pantallas grandes
+}

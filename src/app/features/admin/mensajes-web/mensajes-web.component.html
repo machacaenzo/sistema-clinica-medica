@@ -1,0 +1,124 @@
+<div class="w-full h-full p-4 flex flex-col">
+
+  <!-- 1. USO DE TU CLASE GLOBAL 'content-card' (Efecto Glass) -->
+  <div class="content-card animate-fade-in">
+
+    <!-- HEADER (Estilo Toolbar) -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 drop-shadow-sm">Mensajes Web</h2>
+        <p class="text-slate-600 font-medium text-sm">Buzón de entrada de consultas</p>
+      </div>
+
+      <!-- Badge de cantidad estilo admin -->
+      <div class="status-badge activo text-sm">
+        {{ mensajes().length }} Mensajes
+      </div>
+    </div>
+
+    <!-- ÁREA DE LISTA (Uso de 'table-section' para el fondo) -->
+    <div class="table-section relative flex flex-col">
+
+      <!-- Scroll interno -->
+      <div class="absolute inset-0 overflow-y-auto p-2 custom-scrollbar">
+        <div class="flex flex-col gap-1">
+
+          @for (msg of mensajes(); track msg.id) {
+            <!-- ITEM DE LISTA (Estilo fila de tabla) -->
+            <div (click)="abrirMensaje(msg)"
+                 class="group flex items-center justify-between p-4 rounded-xl transition-all cursor-pointer border-b border-teal-500/10 hover:bg-white/40 active:scale-[0.99]"
+                 [ngClass]="msg.leido ? 'opacity-75' : 'bg-white/10'">
+
+              <div class="flex items-center gap-4 overflow-hidden w-full">
+
+                <!-- Icono Estado (Circular estilo .icon-btn) -->
+                <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors shadow-sm border"
+                     [ngClass]="msg.leido ? 'bg-slate-100/50 text-slate-400 border-slate-200' : 'bg-teal-100 text-teal-600 border-teal-200'">
+                  <fa-icon [icon]="msg.leido ? icons.read : icons.unread"></fa-icon>
+                </div>
+
+                <!-- Contenido -->
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center justify-between gap-2 mb-1">
+                    <h4 class="text-sm text-slate-800 truncate"
+                        [ngClass]="msg.leido ? 'font-medium' : 'font-black'">
+                      {{ msg.asunto }}
+                    </h4>
+
+                    <!-- Fecha (Badge sutil) -->
+                    <span class="text-[10px] font-bold text-slate-500 bg-white/30 px-2 py-1 rounded-lg border border-white/40 whitespace-nowrap">
+                      {{ msg.fecha.toDate() | date:'dd/MM HH:mm' }}
+                    </span>
+                  </div>
+
+                  <p class="text-xs text-slate-600 truncate flex items-center gap-2">
+                    <span class="font-bold text-teal-700">{{ msg.nombre }}:</span>
+                    <span class="opacity-90">{{ msg.mensaje }}</span>
+                  </p>
+                </div>
+
+                <!-- Botón Borrar (Aparece en Hover) -->
+                <button (click)="borrarMensaje($event, msg.id)"
+                        class="icon-btn toggle opacity-0 group-hover:opacity-100 ml-2"
+                        title="Eliminar">
+                  <fa-icon [icon]="icons.trash"></fa-icon>
+                </button>
+
+              </div>
+            </div>
+          }
+
+          <!-- Estado Vacío -->
+          @if (mensajes().length === 0) {
+            <div class="flex flex-col items-center justify-center py-20 text-slate-400">
+              <fa-icon [icon]="icons.read" class="text-4xl mb-3 opacity-30"></fa-icon>
+              <p class="font-medium">No hay mensajes nuevos.</p>
+            </div>
+          }
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL (Usa tus clases de input-field y estilos generales) -->
+@if (selectedMensaje()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+
+      <!-- Header Modal -->
+      <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-start">
+        <div>
+          <h3 class="font-bold text-lg text-slate-800">{{ selectedMensaje()?.asunto }}</h3>
+          <p class="text-xs text-slate-500 mt-1">
+            De: <span class="font-bold text-slate-700">{{ selectedMensaje()?.nombre }}</span>
+            ({{ selectedMensaje()?.email }})
+          </p>
+        </div>
+        <button (click)="cerrarModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+          <fa-icon [icon]="icons.close" class="text-xl"></fa-icon>
+        </button>
+      </div>
+
+      <!-- Cuerpo -->
+      <div class="p-6 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap overflow-y-auto custom-scrollbar">
+        {{ selectedMensaje()?.mensaje }}
+      </div>
+
+      <!-- Footer -->
+      <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center mt-auto">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">
+          Recibido: {{ selectedMensaje()?.fecha?.toDate() | date:'medium' }}
+        </span>
+
+        <a [href]="'mailto:' + selectedMensaje()?.email"
+           class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2 shadow-lg shadow-teal-500/30">
+           <fa-icon [icon]="icons.reply"></fa-icon> Responder
+        </a>
+      </div>
+
+    </div>
+  </div>
+}

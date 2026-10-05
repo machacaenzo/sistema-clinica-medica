@@ -1,0 +1,42 @@
+// Importar estilos base del admin
+@import '../../../features/admin/admin-theme';
+
+// Layout de Columnas
+.kanban-col {
+  @apply flex flex-col h-full rounded-2xl overflow-hidden shadow-sm transition-all;
+  min-height: 300px;
+}
+
+.col-header {
+  @apply px-4 py-3 flex justify-between items-center text-xs font-black tracking-widest uppercase;
+}
+
+.badge {
+  @apply px-2 py-0.5 rounded-md text-[10px] font-bold;
+}
+
+.col-body {
+  @apply flex-1 p-3 flex flex-col gap-3 overflow-y-auto;
+  // Usamos el custom-scrollbar del admin-theme
+}
+
+// Tarjetas de Tarea
+.task-card {
+  @apply bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-pointer transition-all duration-200;
+
+  &:hover {
+    @apply transform -translate-y-1 shadow-md;
+  }
+}
+
+.priority-badge {
+  @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase border tracking-wide;
+}
+
+.btn-action {
+  @apply px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center;
+}
+
+.empty-state {
+  @apply text-center text-slate-400 text-xs py-10 italic opacity-60;
+}

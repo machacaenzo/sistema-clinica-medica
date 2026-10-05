@@ -1,0 +1,75 @@
+<div class="flex flex-col h-full gap-4 overflow-hidden">
+
+  <!-- 1. SELECTORES DE TIPO (Diseño Compacto) -->
+  <div class="flex flex-wrap justify-center gap-1.5 bg-slate-100/50 backdrop-blur-md p-1.5 rounded-2xl self-center border border-slate-200/60 shadow-sm shrink-0">
+    <button type="button" (click)="cambiarGrafico('presion')"
+            class="btn-chart-tab" [class.active]="tipoGrafico() === 'presion'">
+      PA
+    </button>
+    <button type="button" (click)="cambiarGrafico('peso')"
+            class="btn-chart-tab" [class.active]="tipoGrafico() === 'peso'">
+      Peso
+    </button>
+    <button type="button" (click)="cambiarGrafico('glucemia')"
+            class="btn-chart-tab" [class.active]="tipoGrafico() === 'glucemia'">
+      Glu
+    </button>
+    <button type="button" (click)="cambiarGrafico('combinado')"
+            class="btn-chart-tab-dark" [class.active]="tipoGrafico() === 'combinado'">
+      Peso/PA
+    </button>
+    <button type="button" (click)="cambiarGrafico('metabolico')"
+            class="btn-chart-tab-dark" [class.active]="tipoGrafico() === 'metabolico'">
+      Peso/Glu
+    </button>
+  </div>
+
+  <!-- 2. RANGO Y LEYENDA -->
+  <div class="flex items-center justify-between px-2 shrink-0">
+    <!-- Mini Leyenda -->
+    <div class="flex gap-3">
+        <div class="flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Clínica</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="w-2 h-0.5 border-t border-dashed border-orange-400"></span>
+          <span class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Hogar</span>
+        </div>
+    </div>
+
+    <!-- Selectores de Tiempo -->
+    <div class="flex gap-1">
+        <button (click)="cambiarRango('6m')" class="btn-range" [class.active]="rangoSeleccionado()==='6m'">6M</button>
+        <button (click)="cambiarRango('1y')" class="btn-range" [class.active]="rangoSeleccionado()==='1y'">1A</button>
+        <button (click)="cambiarRango('todo')" class="btn-range" [class.active]="rangoSeleccionado()==='todo'">Total</button>
+    </div>
+  </div>
+
+  <!-- 3. ÁREA DEL GRÁFICO (Contenedor Elástico) -->
+  <!-- 'flex-1 min-h-0' es lo que evita que el gráfico empuje el layout hacia abajo -->
+  <div class="flex-1 min-h-0 relative bg-white/30 rounded-3xl border border-white/40 shadow-inner">
+    @if (tieneDatosSuficientes()) {
+      <div class="absolute inset-0 p-2">
+        <canvas baseChart
+          [data]="chartData()"
+          [options]="lineChartOptions"
+          [type]="chartType()">
+        </canvas>
+      </div>
+    } @else {
+      <div class="absolute inset-0 flex flex-col items-center justify-center text-center opacity-30">
+        <span class="text-3xl mb-1">📉</span>
+        <p class="text-[9px] font-black uppercase tracking-widest text-slate-500">Sin datos suficientes</p>
+      </div>
+    }
+  </div>
+
+  <!-- 4. PIE DE GRÁFICO -->
+  <div class="shrink-0 pb-1">
+    <p class="text-[7px] text-slate-400 text-center italic uppercase font-bold tracking-tight">
+        Análisis Evolutivo de Parámetros Biométricos - Clínica Médica HIA
+    </p>
+  </div>
+
+</div>

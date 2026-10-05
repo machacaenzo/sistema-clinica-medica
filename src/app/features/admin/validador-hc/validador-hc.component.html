@@ -1,0 +1,93 @@
+<div class="w-full h-full p-6 flex flex-col items-center justify-center animate-fade-in bg-slate-50/30">
+
+  <div class="glass-panel max-w-2xl w-full p-8 flex flex-col items-center shadow-2xl relative overflow-hidden">
+
+    <!-- HEADER DE SEGURIDAD -->
+    <div class="text-center mb-8 shrink-0">
+      <div class="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto mb-4 shadow-xl shadow-indigo-500/30">
+        <fa-icon [icon]="icons.shield" class="text-2xl"></fa-icon>
+      </div>
+      <h2 class="text-2xl font-black text-slate-800 tracking-tight">Validador de Credenciales</h2>
+      <p class="text-slate-500 text-sm mt-1 font-medium">Protocolo de Privacidad y Exportación Segura</p>
+    </div>
+
+    @if (!pacienteAutorizado()) {
+
+      <!-- 📷 ZONA DE ENTRADA (CÁMARA / TECLADO) -->
+      <div class="w-full max-w-md flex flex-col gap-6">
+
+        @if (usarCamara()) {
+          <div class="relative rounded-[2.5rem] overflow-hidden border-4 border-slate-900 bg-black aspect-square shadow-2xl group">
+            <!-- ESCÁNER ZXING -->
+            <zxing-scanner
+              (scanSuccess)="onCodeResult($event)"
+              [formats]="allowedFormats">
+            </zxing-scanner>
+
+            <!-- OVERLAY VISUAL DE ESCANEO -->
+            <div class="absolute inset-0 border-[40px] border-black/40 pointer-events-none"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-2 border-indigo-500/50 rounded-3xl animate-pulse"></div>
+            <div class="absolute top-0 left-0 w-full h-0.5 bg-indigo-500 shadow-[0_0_20px_indigo] animate-scan-line"></div>
+
+            <div class="absolute bottom-6 left-0 w-full text-center">
+              <span class="bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black text-white uppercase tracking-widest">Alinee el código QR</span>
+            </div>
+          </div>
+        } @else {
+          <!-- ENTRADA MANUAL (TECLADO) -->
+          <div class="bg-slate-100 p-8 rounded-[2.5rem] border-2 border-dashed border-slate-300 text-center animate-fade-in">
+             <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 shadow-sm">
+                <fa-icon [icon]="icons.key" class="text-xl"></fa-icon>
+             </div>
+             <p class="text-xs font-bold text-slate-500 uppercase mb-4 tracking-widest">Código de Autorización</p>
+             <input type="text" [(ngModel)]="codigoManual" (keydown.enter)="validarAcceso(codigoManual())"
+                    placeholder="Escriba el código..."
+                    class="w-full bg-white border-2 border-slate-200 rounded-2xl py-4 px-4 text-center font-mono font-black text-xl tracking-[0.3em] text-indigo-600 outline-none focus:border-indigo-500 shadow-inner">
+             <button (click)="validarAcceso(codigoManual())"
+                     [disabled]="!codigoManual()"
+                     class="mt-6 w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-30">
+               Validar Manualmente
+             </button>
+          </div>
+        }
+
+        <!-- SWITCHER CÁMARA/TECLADO -->
+        <button (click)="usarCamara.set(!usarCamara())"
+                class="flex items-center justify-center gap-2 text-slate-400 hover:text-indigo-600 transition-colors text-xs font-black uppercase tracking-tighter">
+          <fa-icon [icon]="usarCamara() ? icons.key : icons.camera"></fa-icon>
+          {{ usarCamara() ? 'Cambiar a entrada manual' : 'Activar escáner de cámara' }}
+        </button>
+      </div>
+
+    } @else {
+      <!-- 📄 PANEL DE ACCESO CONCEDIDO -->
+      <div class="w-full bg-emerald-50 border border-emerald-100 rounded-[2.5rem] p-8 animate-slide-up text-center border-b-4 border-b-emerald-500">
+        <div class="relative inline-block mb-4">
+           <img [src]="pacienteAutorizado().foto || 'assets/user-default.jpg'" class="w-24 h-24 rounded-full border-4 border-white shadow-xl object-cover">
+           <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-500 rounded-full border-4 border-emerald-50 flex items-center justify-center text-white text-xs">
+              <fa-icon [icon]="icons.user"></fa-icon>
+           </div>
+        </div>
+
+        <h3 class="text-2xl font-black text-slate-800 leading-tight">{{ pacienteAutorizado().nombreCompleto }}</h3>
+        <p class="text-sm text-slate-500 font-bold mb-8">DNI Documento: {{ pacienteAutorizado().dni }}</p>
+
+        <div class="grid grid-cols-1 gap-3 max-w-sm mx-auto">
+          <button (click)="descargarPDF()"
+                  class="bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-3">
+            <fa-icon [icon]="icons.pdf" class="text-xl"></fa-icon> Exportar Historia Clínica
+          </button>
+
+          <button (click)="reset()" class="text-slate-400 font-bold text-[10px] uppercase tracking-widest hover:text-slate-600 transition-colors py-2">
+            Cancelar y revocar token
+          </button>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <p class="text-[9px] text-slate-400 mt-8 font-black uppercase tracking-[0.4em] opacity-60">
+    <fa-icon [icon]="icons.shield" class="mr-1"></fa-icon> Sistema Blindado bajo normas de privacidad
+  </p>
+</div>

@@ -1,0 +1,82 @@
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+  <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden border border-white/20">
+
+    <!-- Header -->
+    <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-100 flex justify-between items-center">
+      <div>
+        <h3 class="font-black text-indigo-900 text-lg flex items-center gap-2">
+          <fa-icon [icon]="icons.video"></fa-icon> Programar Videoconsulta
+        </h3>
+        <p class="text-xs text-indigo-600">Paciente: <span class="font-bold">{{ paciente.nombreCompleto }}</span></p>
+      </div>
+      <button (click)="cerrar.emit()" class="text-slate-400 hover:text-red-500"><fa-icon [icon]="icons.close" class="text-lg"></fa-icon></button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-6">
+      <form [formGroup]="form" (ngSubmit)="agendar()" class="flex flex-col gap-4">
+
+        <!-- Fecha -->
+        <div>
+          <label class="label-text text-slate-500 font-bold text-xs uppercase mb-1 block">Fecha de Cita</label>
+          <div class="relative group">
+            <!-- Icono -->
+            <fa-icon [icon]="icons.calendar" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 z-10 pointer-events-none"></fa-icon>
+
+            <!-- Input con STYLE FORZADO (padding-left: 3rem) -->
+            <input type="date" formControlName="fecha"
+                   style="padding-left: 3rem !important;"
+                   class="input-field w-full border border-slate-200 rounded-xl py-3 text-sm focus:border-indigo-400 outline-none transition-all font-bold text-slate-700">
+          </div>
+        </div>
+
+        <!-- Hora -->
+        <div>
+          <label class="label-text text-slate-500 font-bold text-xs uppercase mb-1 block">Hora</label>
+          <div class="relative group">
+            <!-- Icono -->
+            <fa-icon [icon]="icons.clock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 z-10 pointer-events-none"></fa-icon>
+
+            <!-- Input con STYLE FORZADO -->
+            <input type="time" formControlName="hora"
+                   style="padding-left: 3rem !important;"
+                   class="input-field w-full border border-slate-200 rounded-xl py-3 text-sm focus:border-indigo-400 outline-none transition-all font-bold text-slate-700">
+          </div>
+        </div>
+
+        <!-- Link (Opcional) -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <label class="label-text text-slate-500 font-bold text-xs uppercase mb-2 block flex justify-between">
+            <span>Enlace de Reunión</span>
+            <span class="text-[9px] bg-slate-200 px-2 py-0.5 rounded text-slate-500">Opcional</span>
+          </label>
+          <div class="relative group">
+            <!-- Icono -->
+            <fa-icon [icon]="icons.link" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-10 pointer-events-none"></fa-icon>
+
+            <!-- Input con STYLE FORZADO -->
+            <input type="url" formControlName="link" placeholder="meet.google.com/..."
+                   style="padding-left: 3rem !important;"
+                   class="input-field w-full border border-white bg-white rounded-lg py-2 text-xs focus:border-indigo-400 outline-none shadow-sm">
+          </div>
+          <p class="text-[9px] text-slate-400 mt-2 leading-tight pl-1">
+            * Si lo dejas vacío, el sistema generará una sala segura de Jitsi automáticamente.
+          </p>
+        </div>
+
+        <!-- Botón Guardar -->
+        <button type="submit" [disabled]="form.invalid || loading()"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 active:scale-95">
+           @if (loading()) {
+             <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+             <span>Guardando...</span>
+           } @else {
+             <fa-icon [icon]="icons.save"></fa-icon> Confirmar Videoconsulta
+           }
+        </button>
+
+      </form>
+    </div>
+
+  </div>
+</div>

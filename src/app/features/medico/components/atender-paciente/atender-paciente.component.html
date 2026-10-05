@@ -1,0 +1,835 @@
+<div class="w-full h-full p-4 flex flex-col gap-4 animate-fade-in">
+
+  <!-- 1. HEADER (Glass Toolbar) -->
+  <div class="glass-panel !h-auto !flex-row justify-between items-center px-6 py-4 shrink-0 z-50 !overflow-visible">
+    <div class="flex items-center gap-4">
+      <button type="button" (click)="volver()" class="icon-btn toggle" title="Volver al Dashboard">
+        <fa-icon [icon]="icons.volver"></fa-icon>
+      </button>
+
+      <div>
+        <h1 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+          Consulta Médica
+          <!-- Badge Tipo de Consulta -->
+          @switch (tipoConsulta()) {
+          @case ('APTO_FISICO') { <span
+            class="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded border border-blue-200 uppercase tracking-wide">Apto
+            Físico</span> }
+          @case ('CONTROL_CRONICO') { <span
+            class="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200 uppercase tracking-wide">Control
+            Crónico</span> }
+          @default { <span
+            class="text-[10px] font-bold bg-teal-100 text-teal-700 px-2 py-0.5 rounded border border-teal-200 uppercase tracking-wide">General</span>
+          }
+          }
+        </h1>
+        <p class="text-xs text-slate-500 font-mono mt-0.5 flex gap-2">
+          <span>📅 {{ turnoActual()?.fechaString }}</span>
+          <span>🕒 {{ turnoActual()?.hora }} hs</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- BOTÓN PLANTILLAS -->
+    <div class="relative">
+      <button type="button" (click)="togglePlantillas()"
+        class="px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 font-bold text-xs border border-indigo-100 hover:bg-indigo-100 hover:shadow-md transition-all flex items-center gap-2">
+        <fa-icon [icon]="icons.plantilla"></fa-icon> Cargar Plantilla
+      </button>
+
+      @if (mostrarMenuPlantillas()) {
+      <div class="fixed inset-0 z-40" (click)="mostrarMenuPlantillas.set(false)"></div>
+      <div
+        class="absolute right-0 top-full mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 z-50 p-2 animate-fade-in ring-1 ring-slate-900/5">
+        <p
+          class="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 mb-1">
+          Plantillas Disponibles</p>
+        <div class="max-h-60 overflow-y-auto custom-scrollbar">
+          @for (p of plantillas(); track p.nombre) {
+          <button type="button" (click)="aplicarPlantilla(p)"
+            class="w-full text-left px-3 py-2.5 text-xs font-bold text-slate-600 hover:bg-teal-50 hover:text-teal-700 rounded-xl transition-colors flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span> {{ p.nombre }}
+          </button>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- 2. GRID PRINCIPAL -->
+  <div class="flex-1 grid grid-cols-12 gap-4 min-h-0 relative">
+
+    <!-- TOOLBAR FLOTANTE -->
+    <div class="absolute right-[26%] top-4 z-40 hidden xl:block">
+      <app-medical-toolbar (openLab)="mostrarModalLaboratorio.set(true)" (openBodyMap)="mostrarMapaCorporal.set(true)"
+        (openRiskCalc)="abrirCalculadora()" (openRenalCalc)="abrirCalculadoraRenal()" (openPharmacy)="abrirFarmacia()">
+      </app-medical-toolbar>
+    </div>
+
+    <!-- A. COLUMNA IZQUIERDA -->
+    <aside class="col-span-3 glass-panel flex flex-col overflow-hidden">
+      <!-- Contenedor con SCROLL -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+
+        @if (pacienteData()) {
+        <!--
+         Usamos un div de flujo vertical con un gap grande (gap-8)
+         para asegurar separación física
+      -->
+        <div class="flex flex-col gap-8 w-full">
+
+          <!-- Componente 1: Datos y Riesgos -->
+          <app-detalle-paciente [paciente]="pacienteData()!" [foto]="pacienteData()?.foto || defaultImage"
+            class="block w-full"> <!-- Forzamos comportamiento de bloque -->
+          </app-detalle-paciente>
+
+          <!-- Componente 2: Notas y Objetivos -->
+          <div class="border-t border-slate-200/50 pt-8">
+            <app-notas-objetivos [paciente]="pacienteData()!" class="block w-full">
+              <!-- Forzamos comportamiento de bloque -->
+            </app-notas-objetivos>
+          </div>
+
+        </div>
+        }
+
+      </div>
+    </aside>
+
+    <!-- B. COLUMNA CENTRAL: FORMULARIO DINÁMICO -->
+    <main class="col-span-6 glass-panel relative flex flex-col">
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+        <form [formGroup]="consultaForm" (ngSubmit)="finalizarConsulta()" class="space-y-6">
+          <!-- ======================================== -->
+<!-- 🧪 RESULTADOS DE LABORATORIO (EN VIVO) -->
+<!-- ======================================== -->
+@if (pedidoLaboratorioActual(); as lab) {
+  <div class="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-2xl shadow-md mb-6 animate-slide-up relative overflow-hidden">
+
+    <!-- Decoración de fondo (Asegúrate de tener faMicroscope en el TS) -->
+    <fa-icon [icon]="icons.micro" class="absolute -right-4 -bottom-4 text-8xl text-indigo-200/50 rotate-12"></fa-icon>
+
+    <div class="relative z-10">
+      <h4 class="text-sm font-black text-indigo-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <fa-icon [icon]="icons.check"></fa-icon> Resultados Disponibles del Laboratorio
+      </h4>
+
+      <!-- ✅ CORRECCIÓN 1: Verificamos que 'resultados' exista antes de iterar -->
+      @if (lab.resultados) {
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+          @for (item of lab.resultados | keyvalue; track item.key) {
+            <!-- Filtramos observaciones y valores vacíos -->
+            @if (item.key !== 'observaciones' && item.key !== 'observacionesTecnicas' && item.value) {
+              <div class="bg-white p-2 rounded-lg border border-indigo-100 shadow-sm flex flex-col">
+                <span class="text-[9px] font-bold text-slate-400 uppercase truncate">{{ item.key }}</span>
+                <span class="text-sm font-black text-indigo-700">{{ item.value }}</span>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <!-- ✅ CORRECCIÓN 2: Usamos $any() para leer propiedades dinámicas sin error -->
+      @if ($any(lab.resultados)?.observaciones || lab.observacionesTecnicas) {
+        <div class="bg-white/60 p-3 rounded-xl border border-indigo-100">
+          <span class="text-[9px] font-black text-indigo-500 uppercase block mb-1">Informe del Técnico:</span>
+          <p class="text-xs text-slate-700 italic font-medium">
+            "{{ $any(lab.resultados)?.observaciones || lab.observacionesTecnicas }}"
+          </p>
+        </div>
+      }
+
+      <!-- Footer fecha -->
+      <div class="mt-3 flex justify-end">
+         <span class="text-[9px] font-bold text-indigo-400 bg-white px-2 py-1 rounded-md border border-indigo-100">
+           Fecha Proceso: {{ lab.fechaFinalizado?.toDate() | date:'short' }}
+         </span>
+      </div>
+    </div>
+  </div>
+}
+          <!-- 1. SIGNOS VITALES (Siempre Visible) -->
+          <div class="bg-white/40 border border-white/60 p-5 rounded-2xl shadow-sm">
+            <h4 class="text-xs font-black text-teal-700 uppercase mb-4 flex items-center gap-2">
+              <fa-icon [icon]="icons.presion"></fa-icon> Signos Vitales
+            </h4>
+            <div class="grid grid-cols-4 gap-3">
+              <div>
+                <label class="label-mini flex justify-between items-center mb-1.5">
+                  Presión
+                  <button type="button" (click)="abrirCalculadora()"
+                    class="ml-1 px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-[9px] font-black border border-rose-200 hover:bg-rose-200 transition-colors shadow-sm"
+                    title="Calcular Riesgo CV"><fa-icon [icon]="icons.calculadora"></fa-icon></button>
+                </label>
+                <input type="text" formControlName="presion" class="input-mini" placeholder="120/80">
+              </div>
+              <div><label class="label-mini">Peso (kg)</label><input type="number" formControlName="peso"
+                  class="input-mini"></div>
+              <div><label class="label-mini">Altura (cm)</label><input type="number" formControlName="altura"
+                  class="input-mini"></div>
+              <div><label class="label-mini">Temp (°C)</label><input type="number" formControlName="temperatura"
+                  class="input-mini"></div>
+              @if (esDiabetico()) {
+              <div class="col-span-4 mt-2 pt-2 border-t border-slate-200/50 flex items-center gap-3 animate-fade-in">
+                <label class="label-mini text-orange-600 mb-0 w-auto">Glucemia:</label>
+                <input type="number" formControlName="glucemia"
+                  class="input-mini border-orange-200 bg-orange-50/50 w-24">
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Alerta Metabólica -->
+          @if (alertaMetabolica().length > 0) {
+          <div
+            class="mb-6 bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-xl shadow-sm animate-fade-in flex items-start gap-4">
+            <div class="bg-orange-100 p-2 rounded-full text-orange-600 shrink-0"><fa-icon [icon]="icons.alerta"
+                class="text-xl"></fa-icon></div>
+            <div>
+              <h4 class="font-bold text-orange-800 text-sm uppercase tracking-wide">Posible Síndrome Metabólico</h4>
+              <ul class="list-disc list-inside text-xs text-orange-800 font-medium space-y-0.5 mt-1">
+                @for (criterio of alertaMetabolica(); track criterio) { <li>{{ criterio }}</li> }
+              </ul>
+              <div class="mt-2">
+                <button type="button" (click)="insertarRiesgo('\n[ALERTA CLÍNICA]: Síndrome Metabólico detectado.')"
+                  class="text-[10px] font-bold bg-white text-orange-700 px-3 py-1 rounded border border-orange-200 hover:bg-orange-100 transition-colors">Insertar
+                  en Diagnóstico</button>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- 2. FORMULARIO DINÁMICO SEGÚN TIPO -->
+          @switch (tipoConsulta()) {
+
+          <!-- CASO A: APTO FÍSICO (Completo y Profesional) -->
+          @case ('APTO_FISICO') {
+          <div class="space-y-4 animate-fade-in">
+
+            <div class="bg-blue-50/50 border border-blue-100 p-5 rounded-2xl shadow-sm">
+              <h4 class="text-xs font-black text-blue-700 uppercase mb-4 flex items-center gap-2">
+                <fa-icon [icon]="icons.check"></fa-icon> Examen Físico Dirigido
+              </h4>
+              <div class="flex flex-col gap-2">
+                <label
+                  class="flex items-center gap-3 cursor-pointer p-2.5 bg-white rounded-xl border border-blue-100 hover:border-blue-300 transition-colors">
+                  <input type="checkbox" formControlName="checkCorazon"
+                    class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                  <span class="text-xs font-bold text-slate-700">Auscultación Cardíaca (R1-R2 Normofonéticos)</span>
+                </label>
+                <label
+                  class="flex items-center gap-3 cursor-pointer p-2.5 bg-white rounded-xl border border-blue-100 hover:border-blue-300 transition-colors">
+                  <input type="checkbox" formControlName="checkPulmones"
+                    class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                  <span class="text-xs font-bold text-slate-700">Auscultación Respiratoria (Buena Entrada Aire)</span>
+                </label>
+                <label
+                  class="flex items-center gap-3 cursor-pointer p-2.5 bg-white rounded-xl border border-blue-100 hover:border-blue-300 transition-colors">
+                  <input type="checkbox" formControlName="checkColumna"
+                    class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                  <span class="text-xs font-bold text-slate-700">Columna y Postura (Alineación Conservada)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- NUEVA SECCIÓN: ANAMNESIS DE RIESGO (ROJO) -->
+            <div class="bg-red-50/50 border border-red-100 p-5 rounded-2xl shadow-sm">
+              <h4 class="text-xs font-black text-red-700 uppercase mb-4 flex items-center gap-2">
+                <fa-icon [icon]="icons.alerta"></fa-icon> Anamnesis de Riesgo (Interrogatorio)
+              </h4>
+              <div class="flex flex-col gap-2">
+                <label
+                  class="flex items-center gap-3 cursor-pointer p-2.5 bg-white rounded-xl border border-red-100 hover:border-red-300 transition-colors">
+                  <input type="checkbox" formControlName="checkMuerteSubita"
+                    class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
+                  <span class="text-xs font-bold text-slate-700">Antecedentes Familiares de Muerte Súbita</span>
+                </label>
+                <label
+                  class="flex items-center gap-3 cursor-pointer p-2.5 bg-white rounded-xl border border-red-100 hover:border-red-300 transition-colors">
+                  <input type="checkbox" formControlName="checkDesmayos"
+                    class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
+                  <span class="text-xs font-bold text-slate-700">Refiere Síncope/Mareos durante ejercicio</span>
+                </label>
+                <label
+                  class="flex items-center gap-3 cursor-pointer p-2.5 bg-white rounded-xl border border-red-100 hover:border-red-300 transition-colors">
+                  <input type="checkbox" formControlName="checkDolorPecho"
+                    class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
+                  <span class="text-xs font-bold text-slate-700">Refiere Dolor Precordial en esfuerzo</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- ECG SELECT -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <label class="label-main mb-2">Evaluación Electrocardiograma (ECG)</label>
+              <select formControlName="resultadoECG"
+                class="input-field bg-white cursor-pointer font-bold text-slate-700">
+                <option value="Normal">Normal (Sin alteraciones)</option>
+                <option value="Patológico">Patológico / Dudoso (Requiere Cardio)</option>
+                <option value="No solicitado">No solicitado</option>
+              </select>
+            </div>
+
+            <div class="mt-4">
+              <label class="label-main">Observaciones / Restricciones</label>
+              <textarea formControlName="observacionesApto" rows="2" class="input-field bg-white"
+                placeholder="Ej: Uso de lentes obligatorios..."></textarea>
+            </div>
+          </div>
+          }
+
+          <!-- CASO B: CONTROL CRÓNICO (Flexible y Modular) -->
+          <!-- CASO B: CONTROL CRÓNICO (Dinámico y Flexible) -->
+          @case ('CONTROL_CRONICO') {
+          <div class="animate-fade-in space-y-4">
+
+            <!-- 1. BARRA DE PROTOCOLOS (Selectores) -->
+            <div
+              class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Activar Protocolos:</p>
+
+              <div class="flex gap-2">
+                <!-- Toggle Diabetes -->
+                <button type="button" (click)="showProtoDiabetes.set(!showProtoDiabetes())"
+                  class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-2"
+                  [ngClass]="showProtoDiabetes() ? 'bg-orange-100 text-orange-700 border-orange-200 shadow-inner' : 'bg-slate-50 text-slate-400 border-transparent hover:bg-slate-100'">
+                  <span class="w-2 h-2 rounded-full"
+                    [ngClass]="showProtoDiabetes() ? 'bg-orange-500' : 'bg-slate-300'"></span>
+                  Diabetes
+                </button>
+
+                <!-- Toggle Cardio/HTA -->
+                <button type="button" (click)="showProtoCardio.set(!showProtoCardio())"
+                  class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-2"
+                  [ngClass]="showProtoCardio() ? 'bg-indigo-100 text-indigo-700 border-indigo-200 shadow-inner' : 'bg-slate-50 text-slate-400 border-transparent hover:bg-slate-100'">
+                  <span class="w-2 h-2 rounded-full"
+                    [ngClass]="showProtoCardio() ? 'bg-indigo-500' : 'bg-slate-300'"></span>
+                  Cardio / HTA
+                </button>
+
+                <!-- Toggle Respiratorio -->
+                <button type="button" (click)="showProtoRespi.set(!showProtoRespi())"
+                  class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-2"
+                  [ngClass]="showProtoRespi() ? 'bg-sky-100 text-sky-700 border-sky-200 shadow-inner' : 'bg-slate-50 text-slate-400 border-transparent hover:bg-slate-100'">
+                  <span class="w-2 h-2 rounded-full"
+                    [ngClass]="showProtoRespi() ? 'bg-sky-500' : 'bg-slate-300'"></span>
+                  Respiratorio
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. PANELES DE PROTOCOLOS (Se muestran según los switches) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <!-- Panel Diabetes -->
+              @if(showProtoDiabetes()) {
+              <div
+                class="bg-orange-50/50 p-4 rounded-xl border border-orange-100 flex flex-col gap-3 shadow-sm animate-fade-in">
+                <h5 class="text-[10px] font-black text-orange-700 uppercase border-b border-orange-200 pb-1 mb-1">
+                  Diabetes</h5>
+                <label
+                  class="flex items-center gap-2 cursor-pointer hover:bg-orange-100/50 p-1 rounded transition-colors">
+                  <input type="checkbox" formControlName="checkPies"
+                    class="w-4 h-4 text-orange-600 rounded focus:ring-orange-400">
+                  <span class="text-xs font-bold text-slate-700">Examen de Pies (Monofilamento)</span>
+                </label>
+                <div class="flex items-center gap-2">
+                  <label class="label-mini text-left w-auto text-orange-800">Hipoglucemias (mes):</label>
+                  <input type="text" formControlName="hipoglucemias"
+                    class="input-mini w-20 text-center bg-white border-orange-200" placeholder="0">
+                </div>
+              </div>
+              }
+
+              <!-- Panel Cardio/HTA -->
+              @if(showProtoCardio()) {
+              <div
+                class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex flex-col gap-3 shadow-sm animate-fade-in">
+                <h5 class="text-[10px] font-black text-indigo-700 uppercase border-b border-indigo-200 pb-1 mb-1">Cardio
+                  / HTA</h5>
+                <label
+                  class="flex items-center gap-2 cursor-pointer hover:bg-indigo-100/50 p-1 rounded transition-colors">
+                  <input type="checkbox" formControlName="checkEdemas"
+                    class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-400">
+                  <span class="text-xs font-bold text-slate-700">Edemas MMII (Fóvea)</span>
+                </label>
+                <label
+                  class="flex items-center gap-2 cursor-pointer hover:bg-indigo-100/50 p-1 rounded transition-colors">
+                  <input type="checkbox" formControlName="disneaEsfuerzo"
+                    class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-400">
+                  <span class="text-xs font-bold text-slate-700">Disnea de Esfuerzo</span>
+                </label>
+              </div>
+              }
+
+              <!-- Panel Respiratorio -->
+              @if(showProtoRespi()) {
+              <div
+                class="bg-sky-50/50 p-4 rounded-xl border border-sky-100 flex flex-col gap-3 shadow-sm animate-fade-in">
+                <h5 class="text-[10px] font-black text-sky-700 uppercase border-b border-sky-200 pb-1 mb-1">Respiratorio
+                  (Asma/EPOC)</h5>
+                <div class="flex gap-2">
+                  <div class="flex-1">
+                    <label class="label-mini text-left">Sat O2</label>
+                    <input type="number" formControlName="saturacion" class="input-mini bg-white border-sky-200"
+                      placeholder="%">
+                  </div>
+                  <div class="flex-1">
+                    <label class="label-mini text-left">Frec. Resp.</label>
+                    <input type="number" formControlName="frecuenciaResp" class="input-mini bg-white border-sky-200"
+                      placeholder="/min">
+                  </div>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer hover:bg-sky-100/50 p-1 rounded transition-colors">
+                  <input type="checkbox" formControlName="ruidosRespiratorios"
+                    class="w-4 h-4 text-sky-600 rounded focus:ring-sky-400">
+                  <span class="text-xs font-bold text-slate-700">Sibilancias / Rales</span>
+                </label>
+              </div>
+              }
+            </div>
+
+            <!-- SECCIÓN GENERAL (Adherencia + Evolución) -->
+            <!-- Esto aparece SIEMPRE, sin importar los switches -->
+            <div class="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+              <div>
+                <label class="label-mini text-left mb-1 pl-1">Adherencia Tratamiento</label>
+                <select formControlName="adherencia" class="input-field py-1.5 text-xs h-9 bg-white cursor-pointer">
+                  <option value="Buena">🟢 Buena</option>
+                  <option value="Regular">🟡 Regular</option>
+                  <option value="Mala">🔴 Mala</option>
+                </select>
+              </div>
+              <div>
+                <label class="label-mini text-left mb-1 pl-1">Cumplimiento Dieta</label>
+                <select formControlName="cumplimientoDieta"
+                  class="input-field py-1.5 text-xs h-9 bg-white cursor-pointer">
+                  <option value="Buena">🟢 Buena</option>
+                  <option value="Regular">🟡 Regular</option>
+                  <option value="Mala">🔴 Mala</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- SOAP Evolutivo -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="flex flex-col">
+                <label class="label-main">Evolución Clínica</label>
+                <textarea formControlName="examenFisico" rows="6" class="input-field resize-none h-full"
+                  placeholder="Describa evolución..."></textarea>
+              </div>
+
+              <div class="flex flex-col">
+                <div class="flex justify-between items-center mb-1">
+                  <label class="label-main">Plan Terapéutico</label>
+                  <button type="button" (click)="copiarMedicacionHabitual()"
+                    class="text-[10px] font-bold bg-purple-100 text-purple-700 px-3 py-1 rounded-lg border border-purple-200 hover:bg-purple-200 transition-colors flex items-center gap-1 shadow-sm active:scale-95">
+                    <fa-icon [icon]="icons.pills"></fa-icon> Traer Última Receta
+                  </button>
+                </div>
+                <textarea formControlName="tratamiento" rows="6" class="input-field resize-none h-full"
+                  placeholder="Indicaciones..."></textarea>
+              </div>
+            </div>
+
+            <!-- Footer Botones -->
+            <div class="flex justify-between items-center bg-teal-50/50 p-3 rounded-xl border border-teal-100">
+              <label class="flex items-center gap-2 cursor-pointer select-none">
+                <input type="checkbox" formControlName="actualizarMedicacion"
+                  class="w-4 h-4 text-teal-600 rounded focus:ring-teal-500">
+                <span class="text-xs font-bold text-teal-800">Actualizar Medicación en Perfil</span>
+              </label>
+              <button type="button" (click)="imprimirReceta()"
+                class="text-[10px] font-bold bg-white text-slate-600 px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-800 hover:text-white transition-colors shadow-sm flex items-center gap-1 active:scale-95">
+                <fa-icon [icon]="icons.print"></fa-icon> Imprimir Receta
+              </button>
+            </div>
+
+          </div>
+          }
+
+          <!-- CASO C: GENERAL (Default) -->
+          @default {
+          <div class="space-y-4 animate-fade-in">
+            <div><label class="label-main">Motivo</label><input type="text" formControlName="motivo"
+                class="input-field"></div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex flex-col"><label class="label-main">Examen Físico</label><textarea
+                  formControlName="examenFisico" rows="8" class="input-field resize-none h-full"></textarea></div>
+
+              <!-- DIAGNÓSTICO CON CIE-10 -->
+              <div class="flex flex-col relative">
+                <div class="flex justify-between items-center mb-1">
+                  <label class="label-main">Diagnóstico</label>
+                  <span
+                    class="text-[9px] text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-100">CIE-10
+                    ON</span>
+                </div>
+
+                <!-- Buscador Inteligente -->
+                <div class="relative mb-2">
+                  <input type="text" [value]="busquedaCie10()" (input)="buscarCie10($event)"
+                    placeholder="🔍 Buscar código CIE-10 (ej: Gastritis, J11...)"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 transition-all">
+
+                  <!-- Lista Flotante de Resultados -->
+                  @if (mostrandoResultadosCie10() && resultadosCie10().length > 0) {
+                  <div
+                    class="absolute top-full left-0 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-50 mt-1 max-h-40 overflow-y-auto custom-scrollbar animate-fade-in">
+                    @for (d of resultadosCie10(); track d.codigo) {
+                    <button type="button" (click)="seleccionarDiagnostico(d)"
+                      class="w-full text-left px-3 py-2 hover:bg-teal-50 transition-colors border-b border-slate-50 last:border-0">
+                      <span class="text-xs font-black text-teal-600 block">{{ d.codigo }}</span>
+                      <span class="text-xs text-slate-600 font-medium">{{ d.descripcion }}</span>
+                    </button>
+                    }
+                  </div>
+                  }
+                </div>
+
+                <!-- Textarea -->
+                <textarea formControlName="diagnostico" rows="5"
+                  class="input-field resize-none h-full font-medium text-slate-700"
+                  placeholder="Escriba o seleccione un diagnóstico..."></textarea>
+              </div>
+            </div>
+
+            <!-- ALERTAS DE SEGURIDAD FARMACOLÓGICA (DINÁMICAS) -->
+@if (alertasFarmacologicas().length > 0) {
+  <!--
+    Determinamos el color del contenedor:
+    Si alguna alerta es 'CRITICA', el fondo es rojo. Si no, es naranja.
+  -->
+  <div class="p-4 rounded-2xl mb-4 animate-pulse border-4 shadow-xl shadow-red-500/10 transition-all duration-500"
+       [ngClass]="tieneAlertaCritica() ? 'bg-red-600 border-red-400 text-white' : 'bg-amber-500 border-amber-300 text-white'">
+
+    <div class="flex items-start gap-4">
+      <div class="bg-white/20 p-2 rounded-full shrink-0">
+        <fa-icon [icon]="icons.alert" class="text-2xl"></fa-icon>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <h4 class="font-black uppercase tracking-tighter text-sm">
+          {{ tieneAlertaCritica() ? '¡PELIGRO: INCOMPATIBILIDAD CRÍTICA!' : 'ADVERTENCIA DE SEGURIDAD' }}
+        </h4>
+
+        <div class="space-y-2 mt-2">
+          @for (alerta of alertasFarmacologicas(); track alerta.id) {
+            <div class="flex items-start gap-2">
+              <span class="text-[9px] font-black px-1.5 py-0.5 rounded border border-white/40 uppercase shrink-0"
+                    [ngClass]="alerta.severidad === 'CRITICA' ? 'bg-red-800' : 'bg-amber-700'">
+                {{ alerta.severidad }}
+              </span>
+              <p class="text-xs font-bold leading-tight">
+                La droga <span class="underline">{{alerta.droga}}</span> choca con la alergia
+                <span class="bg-white/20 px-1 rounded">{{alerta.alergiasRelacionadas.join(', ')}}</span>:
+                {{alerta.mensajeAlerta}}
+              </p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+            <!-- TRATAMIENTO CON BOTÓN IMPRIMIR -->
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="label-main">Tratamiento</label>
+                <button type="button" (click)="imprimirReceta()"
+                  class="text-[10px] font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-lg border border-slate-200 hover:bg-slate-800 hover:text-white transition-colors shadow-sm flex items-center gap-1 active:scale-95">
+                  <fa-icon [icon]="icons.print"></fa-icon> Imprimir Receta
+                </button>
+              </div>
+              <textarea formControlName="tratamiento" rows="4" class="input-field mb-4"></textarea>
+            </div>
+          </div>
+          }
+          }
+
+          <!-- HERRAMIENTAS COMUNES (Siempre al final) -->
+
+          <!-- Nuevo Antecedente -->
+          <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 flex items-center gap-3">
+            <fa-icon [icon]="icons.notas" class="text-indigo-400"></fa-icon>
+            <input type="text" formControlName="nuevoAntecedente" placeholder="Agregar antecedente crónico (Opcional)"
+              class="bg-transparent text-sm w-full outline-none text-indigo-900 placeholder-indigo-300 font-medium">
+          </div>
+
+          <!-- Derivaciones -->
+          <div class="bg-teal-50/30 border border-teal-100 p-5 rounded-2xl shadow-sm">
+            <h4 class="text-xs font-black text-teal-700 uppercase mb-3 flex items-center gap-2"><fa-icon
+                [icon]="icons.doctor"></fa-icon> Derivaciones</h4>
+            <div class="mb-4 space-y-2" [formGroup]="derivacionForm">
+              <div class="flex gap-2">
+                <select formControlName="especialidad" class="input-field appearance-none bg-white text-sm py-2 w-1/3">
+                  <option value="" disabled selected>Especialidad...</option>@for (esp of especialidadesDerivacion;
+                  track esp) {<option [value]="esp">{{esp}}</option>}
+                </select>
+                <input formControlName="motivo" placeholder="Motivo..." class="input-field bg-white text-sm w-full">
+                <button type="button" (click)="agregarDerivacion()"
+                  class="bg-teal-600 text-white w-10 rounded-xl flex items-center justify-center hover:bg-teal-700 shadow-sm"><fa-icon
+                    [icon]="icons.check"></fa-icon></button>
+              </div>
+            </div>
+            <div class="space-y-2">
+              @for (d of listaDerivaciones; track $index) {
+              <div class="flex justify-between items-start bg-white p-2 rounded-lg border border-teal-100/50 shadow-sm">
+                <span class="text-xs font-bold text-teal-800">{{ d.especialidad }}: <span
+                    class="font-normal text-slate-600">{{ d.motivo }}</span></span>
+                <div class="flex gap-2 shrink-0">
+                  <button type="button" (click)="imprimirDerivacion(d)"
+                    class="text-slate-400 hover:text-teal-600 transition-colors w-6 h-6 flex items-center justify-center"><fa-icon
+                      [icon]="icons.print"></fa-icon></button>
+                  <button type="button" (click)="borrarDerivacion($index)"
+                    class="text-red-400 hover:text-red-600 w-6 h-6 flex items-center justify-center"><fa-icon
+                      [icon]="icons.trash"></fa-icon></button>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- ESTUDIOS -->
+<div class="bg-indigo-50/40 border border-indigo-100 p-5 rounded-2xl shadow-sm">
+  <div class="flex justify-between items-center mb-3">
+    <!-- ... header igual ... -->
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-x-2 gap-y-3">
+
+    <!-- ✅ CAMBIO AQUÍ: Agregamos () porque ahora es una señal dinámica -->
+    @for (estudio of listaEstudiosComunes(); track estudio) {
+
+      <label class="flex items-center gap-2 cursor-pointer group select-none">
+        <div class="relative flex items-center justify-center">
+          <input type="checkbox" (change)="toggleEstudio(estudio, $event)"
+            class="peer appearance-none w-4 h-4 border-2 border-slate-300 rounded checked:bg-indigo-500 checked:border-indigo-500 transition-all bg-white">
+          <fa-icon [icon]="icons.check"
+            class="absolute text-white text-[10px] opacity-0 peer-checked:opacity-100 pointer-events-none"></fa-icon>
+        </div>
+        <span class="text-xs text-slate-600 font-medium group-hover:text-indigo-700 transition-colors">
+          {{ estudio }}
+        </span>
+      </label>
+
+    } @empty {
+      <!-- Feedback si no hay conexión o datos -->
+      <p class="text-xs text-slate-400 col-span-4 italic">Cargando catálogo de estudios...</p>
+    }
+  </div>
+</div>
+
+          <!-- ADJUNTOS -->
+          <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm mb-6 relative overflow-hidden">
+            <div class="flex justify-between items-center mb-4 relative z-10">
+              <h4 class="text-xs font-black text-slate-600 uppercase flex items-center gap-2"><fa-icon
+                  [icon]="icons.clip"></fa-icon> Adjuntar Resultados / ECG</h4>
+              <label
+                class="cursor-pointer bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold shadow-md transition-all flex items-center gap-2 active:scale-95">
+                @if (subiendoArchivo()) { <span>Subiendo...</span> } @else { <fa-icon [icon]="icons.upload"></fa-icon>
+                <span>Subir Archivo</span> }
+                <input type="file" class="hidden" (change)="onAdjuntoSeleccionado($event)"
+                  accept="image/*,application/pdf">
+              </label>
+            </div>
+            <div class="flex flex-wrap gap-2 relative z-10">
+              @for (adj of archivosAdjuntos; track $index) {
+              <div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                <fa-icon [icon]="adj.tipo === 'PDF' ? icons.filePdf : icons.fileImg" class="text-slate-400"></fa-icon>
+                <span class="text-xs font-bold text-slate-700 truncate max-w-[100px]">{{ adj.nombre }}</span>
+                <button type="button" (click)="borrarAdjunto($index)" class="text-red-400 hover:text-red-600"><fa-icon
+                    [icon]="icons.trash"></fa-icon></button>
+              </div>
+              }
+            </div>
+          </div>
+<!-- ... (Bloque de Tratamiento que ya tenés) ... -->
+
+          <!-- ✅ NUEVA SECCIÓN: RESUMEN DE FARMACIA / INSUMOS -->
+          @if (insumosVendidos.length > 0) {
+            <div class="bg-purple-50 border border-purple-100 p-5 rounded-2xl shadow-sm mt-4 animate-slide-up">
+
+              <div class="flex justify-between items-center mb-3">
+                 <h4 class="text-xs font-black text-purple-700 uppercase flex items-center gap-2">
+                   <fa-icon [icon]="icons.pills"></fa-icon> Insumos Dispensados
+                 </h4>
+
+                 <!-- Botón para imprimir el Ticket -->
+                 <button type="button" (click)="imprimirTicketFarmacia()"
+                         class="text-[10px] font-bold bg-white text-purple-700 px-3 py-1.5 rounded-lg border border-purple-200 hover:bg-purple-600 hover:text-white transition-colors shadow-sm flex items-center gap-1 active:scale-95">
+                   <fa-icon [icon]="icons.print"></fa-icon> Imprimir Comprobante
+                 </button>
+              </div>
+
+              <div class="space-y-2">
+                 @for (item of insumosVendidos; track $index) {
+                   <div class="flex justify-between items-center bg-white/80 p-2 rounded-lg border border-purple-100/50">
+                      <div class="flex items-center gap-3">
+                         <span class="bg-purple-100 text-purple-700 font-black text-[10px] px-2 py-0.5 rounded shadow-sm">
+                           x{{ item.cantidad }}
+                         </span>
+                         <span class="text-xs text-slate-700 font-bold uppercase tracking-tight">
+                           {{ item.nombre }}
+                         </span>
+                      </div>
+                      <span class="text-xs font-mono font-black text-slate-600">
+                        ${{ item.precio * item.cantidad }}
+                      </span>
+                   </div>
+                 }
+              </div>
+
+              <!-- Total -->
+              <div class="mt-3 pt-2 border-t border-purple-200 flex justify-end gap-2 items-center">
+                 <span class="text-[9px] font-bold text-purple-400 uppercase">Total Venta</span>
+                 <!-- REEMPLAZA EL .reduce(...) POR ESTO: -->
+<span class="font-black text-slate-800 text-lg tracking-tighter">
+  ${{ totalFacturaInsumos() }}
+</span>
+              </div>
+
+            </div>
+          }
+
+          <!-- ... (Acá sigue la sección de Plan de Seguimiento Digital) ... -->
+
+          <!-- SECCIÓN: PRESCRIPCIÓN DE HERRAMIENTAS DIGITALES -->
+<!-- REEMPLAZAR LA SECCIÓN DE PLAN DIGITAL EN atender-paciente.component.html -->
+          <div class="bg-teal-50/50 border border-teal-100 p-5 rounded-2xl shadow-sm mt-4">
+            <h4 class="text-xs font-black text-teal-700 uppercase mb-4 flex items-center gap-2">
+              <fa-icon [icon]="icons.shield"></fa-icon> Plan de Seguimiento Digital
+            </h4>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <!-- Presión -->
+              <label class="check-prescription">
+                <input type="checkbox" (change)="toggleModulo('PRESION')" [checked]="tieneModulo('PRESION')">
+                <span>Presión Arterial</span>
+              </label>
+
+              <!-- Glucemia -->
+              <label class="check-prescription">
+                <input type="checkbox" (change)="toggleModulo('GLUCEMIA')" [checked]="tieneModulo('GLUCEMIA')">
+                <span>Control Glucemia</span>
+              </label>
+
+              <!-- Peso -->
+              <label class="check-prescription">
+                <input type="checkbox" (change)="toggleModulo('PESO')" [checked]="tieneModulo('PESO')">
+                <span>Control de Peso</span>
+              </label>
+
+              <!-- Temperatura -->
+              <label class="check-prescription">
+                <input type="checkbox" (change)="toggleModulo('TEMPERATURA')" [checked]="tieneModulo('TEMPERATURA')">
+                <span>Temperatura</span>
+              </label>
+
+              <!-- HÁBITOS (EL TEST OMS) -->
+
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- FOOTER FLOTANTE -->
+      <div class="p-4 border-t border-white/20 bg-white/20 backdrop-blur-md flex justify-end rounded-b-[2.5rem] gap-3">
+
+        <!-- ✅ BOTÓN APTO FÍSICO (Solo si es Apto) -->
+        @if (tipoConsulta() === 'APTO_FISICO') {
+        <button (click)="imprimirCertificadoApto()" type="button"
+          class="bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 px-6 py-3 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 text-xs">
+          <fa-icon [icon]="icons.print"></fa-icon> Imprimir Certificado
+        </button>
+        }
+
+        <button (click)="finalizarConsulta()" [disabled]="loading()"
+          class="bg-teal-600 hover:bg-teal-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-teal-500/30 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-70">
+          @if (loading()) { <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin">
+          </div> }
+          @else { <fa-icon [icon]="icons.save"></fa-icon> <span>Finalizar Consulta</span> }
+        </button>
+      </div>
+    </main>
+
+    <!-- C. HISTORIAL (3/12) -->
+    <aside class="col-span-3 glass-panel overflow-hidden flex flex-col transition-all">
+      <div class="p-4 border-b border-white/20 bg-white/10 backdrop-blur-md flex justify-between items-center">
+        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+          @if (verGraficos()) { <fa-icon [icon]="icons.grafico" class="text-indigo-500"></fa-icon> Evolución }
+          @else { <fa-icon [icon]="icons.history"></fa-icon> Historial }
+        </h4>
+        <button type="button" (click)="verGraficos.set(!verGraficos())"
+          class="w-8 h-8 rounded-lg flex items-center justify-center bg-white/50 hover:bg-white shadow-sm border border-white/60 text-slate-500 hover:text-teal-600">
+          <fa-icon [icon]="verGraficos() ? icons.lista : icons.grafico"></fa-icon>
+        </button>
+      </div>
+      <div class="flex-1 overflow-hidden relative">
+        @if (verGraficos()) {
+        <app-graficos-evolucion [historial]="historialPrevio()" [medicionesHogar]="medicionesHogar()"
+          [metas]="pacienteData()?.metasSalud">
+        </app-graficos-evolucion>
+        } @else {
+        <app-historia-clinica [historial]="historialPrevio()"
+          (verMapa)="abrirMapaHistorial($event)"></app-historia-clinica>
+        }
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- (Modales...) -->
+  <!-- MODALES (Se mantienen igual) -->
+  @if (mostrarCalculadora()) { <app-calculadora-riesgo [datosBase]="datosParaCalculadora"
+    (cerrar)="mostrarCalculadora.set(false)" (resultadoConfirmado)="insertarRiesgo($event)"></app-calculadora-riesgo> }
+  @if (mostrarMapaCorporal()) {
+  <div
+    class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-fade-in">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl h-[80vh] flex flex-col overflow-hidden border border-slate-200">
+      <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+        <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2"><fa-icon [icon]="icons.cuerpo"
+            class="text-teal-600"></fa-icon> Mapa Corporal</h3>
+        <button type="button" (click)="mostrarMapaCorporal.set(false)"
+          class="text-slate-400 hover:text-slate-600">Cerrar</button>
+      </div>
+      <div class="flex-1 overflow-hidden p-4 bg-slate-100/50">
+        <app-body-map [puntos]="puntosMapa" (puntosChange)="puntosMapa = $event"></app-body-map>
+      </div>
+      <div class="p-4 bg-white border-t border-slate-100 flex justify-end">
+        <button type="button" (click)="mostrarMapaCorporal.set(false)"
+          class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-xl font-bold shadow-lg transition-all flex items-center gap-2"><fa-icon
+            [icon]="icons.check"></fa-icon> Confirmar Marcas</button>
+      </div>
+    </div>
+  </div>
+  }
+  @if (mostrarModalLaboratorio()) { <app-carga-laboratorio [datosPrevios]="datosLaboratorioTemp"
+    (guardar)="guardarLaboratorio($event)" (cancelar)="mostrarModalLaboratorio.set(false)"></app-carga-laboratorio> }
+  @if (mostrarCalculadoraRenal()) { <app-calculadora-renal [datosBase]="datosParaCalculadora"
+    (cerrar)="mostrarCalculadoraRenal.set(false)"
+    (resultadoConfirmado)="insertarRiesgo($event)"></app-calculadora-renal> }
+  @if (mostrarMapaHistorial()) {
+  <div
+    class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-fade-in">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-xl h-[70vh] flex flex-col overflow-hidden border border-slate-200">
+      <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+        <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2"><fa-icon [icon]="icons.cuerpo"
+            class="text-teal-600"></fa-icon> Registro Histórico</h3>
+        <button type="button" (click)="mostrarMapaHistorial.set(false)"
+          class="text-slate-400 hover:text-slate-600">Cerrar</button>
+      </div>
+      <div class="flex-1 overflow-hidden p-4 bg-slate-100/50">
+        <app-body-map [puntos]="puntosMapaHistorial()" [readOnly]="true"></app-body-map>
+      </div>
+    </div>
+  </div>
+  }
+  @if (mostrarModalFarmacia()) { <app-modal-venta-insumos (cerrar)="mostrarModalFarmacia.set(false)"
+    (ventaConfirmada)="onVentaConfirmada($event)"></app-modal-venta-insumos> }
+</div>
